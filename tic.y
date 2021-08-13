@@ -27,7 +27,7 @@ static int hooked;
 static char fdelim;
 
 struct tic_field {
-	char label[8];
+	char *label;
 	char *horodate;
 	char *data;
 };
@@ -40,8 +40,7 @@ struct tic_field *make_field(char *label, char *horodate, char *data)
 	if (!field)
 		return NULL;
 
-	strncpy(field->label, label, sizeof(field->label));
-	free(label);
+	field->label = label;
 	field->horodate = horodate;
 	field->data = data;
 
@@ -50,6 +49,7 @@ struct tic_field *make_field(char *label, char *horodate, char *data)
 
 void free_field(struct tic_field *field)
 {
+	free(field->label);
 	free(field->horodate);
 	free(field->data);
 	free(field);
