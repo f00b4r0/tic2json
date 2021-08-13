@@ -18,6 +18,8 @@
 	#include <stdio.h>
 	#include <stdlib.h>
 	#include <string.h>
+	#include <inttypes.h>
+
 	int yylex();
 	int yylex_destroy();
 	extern FILE *yyin;
@@ -26,13 +28,19 @@
 static int hooked;
 static char fdelim;
 
+enum f_type { F_STRING, F_INT };
+
 struct tic_field {
+	enum f_type type;
 	char *label;
 	char *horodate;
-	char *data;
+	union {
+		char *s;
+		int i;
+	} data;
 };
 
-struct tic_field *make_field(char *label, char *horodate, char *data)
+struct tic_field *make_field(enum f_type type, char *label, char *horodate, char *data)
 {
 	struct tic_field *field;
 
@@ -42,16 +50,49 @@ struct tic_field *make_field(char *label, char *horodate, char *data)
 
 	field->label = label;
 	field->horodate = horodate;
-	field->data = data;
+	field->type = type;
+	switch (type) {
+		case F_STRING:
+			field->data.s = data;
+			break;
+		case F_INT:
+			field->data.i = (int)strtol(data, NULL, 10);
+			free(data);
+			break;
+		default:
+			break;
+	}
 
 	return field;
+}
+
+void print_field(struct tic_field *field)
+{
+	printf("%c{ \"label\": \"%.8s\", \"data\": ", fdelim, field->label);
+	switch (field->type) {
+		case F_STRING:
+			printf("\"%s\"", field->data.s ? field->data.s : "");
+			break;
+		case F_INT:
+			printf("%d", field->data.i);
+			break;
+	}
+	if (field->horodate)
+		printf(", \"horodate\": \"%s\"", field->horodate);
+	printf(" }");
 }
 
 void free_field(struct tic_field *field)
 {
 	free(field->label);
 	free(field->horodate);
-	free(field->data);
+	switch (field->type) {
+		case F_STRING:
+			free(field->data.s);
+			break;
+		default:
+			break;
+	}
 	free(field);
 }
 
@@ -115,10 +156,7 @@ dataset:
 		{
 			if (!$2) YYABORT;	// OOM
 			if (hooked) {
-				printf("%c{ \"label\": \"%.8s\", \"data\": \"%s\"", fdelim, $2->label, $2->data ? $2->data : "");
-				if ($2->horodate)
-					printf(", \"horodate\": \"%s\"", $2->horodate);
-				printf(" }");
+				print_field($2);
 				fdelim = ',';
 			}
 			free_field($2);
@@ -133,12 +171,12 @@ field: 	field_horodate
 ;
 
 field_horodate:
-	etiquette_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_DATA TOK_SEP	{ $$ = make_field($1, $3, $5); }
-	| etiquette_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_SEP	{ $$ = make_field($1, $3, NULL); }
+	etiquette_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_DATA TOK_SEP	{ $$ = make_field(F_STRING, $1, $3, $5); }
+	| etiquette_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_SEP	{ $$ = make_field(F_STRING, $1, $3, NULL); }
 ;
 
 field_nodate:
-	etiquette_nodate TOK_SEP TOK_DATA TOK_SEP	{ $$ = make_field($1, NULL, $3); }
+	etiquette_nodate TOK_SEP TOK_DATA TOK_SEP	{ $$ = make_field(F_STRING, $1, NULL, $3); }
 ;
 
 etiquette_horodate:
