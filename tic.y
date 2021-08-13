@@ -19,6 +19,7 @@
 	#include <stdlib.h>
 	#include <string.h>
 	#include <inttypes.h>
+	#include <unistd.h>
 
 	int yylex();
 	int yylex_destroy();
@@ -27,6 +28,7 @@
 
 static int hooked;
 static char fdelim;
+static int mask_allzeros;
 
 enum f_type { F_STRING, F_INT, F_HEX };
 
@@ -72,6 +74,9 @@ struct tic_field *make_field(enum f_type type, char *label, char *horodate, char
 
 void print_field(struct tic_field *field)
 {
+	if (mask_allzeros && (F_INT == field->type) && (0 == field->data.i))
+		return;
+
 	printf("%c{ \"label\": \"%.8s\", \"data\": ", fdelim, field->label);
 	switch (field->type) {
 		case F_STRING:
@@ -278,11 +283,26 @@ etiquette_int_nodate:
 
 int main(int argc, char **argv)
 {
+	int ch;
+
 	hooked = 0;
 	fdelim = ' ';
+	mask_allzeros = 0;
+
+	while ((ch = getopt(argc, argv, "z")) != -1) {
+		switch (ch) {
+		case 'z':
+			mask_allzeros = 1;
+			break;
+		}
+	}
+	argc -= optind;
+	argv += optind;
+
 	yyparse();
 	printf("]\n]\n");
 	yylex_destroy();
+
 	return 0;
 }
 
