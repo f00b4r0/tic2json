@@ -6,6 +6,14 @@
 //  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
 //
 
+/*
+ * Outputs as JSON a list of frames which contains a list of fields.
+ * Fields are { "label": "xxx", "data": "xxx", horodate: "xxx" } with horodate optional and data possibly empty.
+ * Data errors can result in some/all fields being omitted in the output frame.
+ * Output JSON is guaranteed to always be valid.
+ * This parser complies with Enedis-NOI-CPT_54E.pdf version 3.
+ */
+
 %{
 	#include <stdio.h>
 	#include <stdlib.h>
@@ -90,7 +98,11 @@ frame:
 			if (!hooked) { hooked=1; printf("[\n["); }
 			else { fdelim=' '; printf ("],\n["); }
 		}
-	| error TOK_ETX	{ hooked=0; }
+	| error TOK_ETX
+		{
+			if (hooked) { fdelim=' '; printf ("],\n["); }
+			fprintf(stderr, "frame error\n");
+		}
 ;
 
 datasets:
@@ -111,9 +123,9 @@ dataset:
 			}
 			free_field($2);
 		}
-	| FIELD_START field FIELD_KO	{ if (!$2) YYABORT; printf("invalid checksum\n"); free_field($2); }
-	| FIELD_START error FIELD_OK
-	| FIELD_START error FIELD_KO
+	| FIELD_START field FIELD_KO	{ if (!$2) YYABORT; fprintf(stderr, "dataset invalid checksum\n"); free_field($2); }
+	| error FIELD_OK	{ fprintf(stderr, "dataset error with valid checksum\n"); }
+	| error FIELD_KO	{ fprintf(stderr, "dataset error with invalid checksum\n"); }
 ;
 
 field: 	field_horodate
