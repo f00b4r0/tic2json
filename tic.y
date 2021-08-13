@@ -28,7 +28,7 @@
 static int hooked;
 static char fdelim;
 
-enum f_type { F_STRING, F_INT };
+enum f_type { F_STRING, F_INT, F_HEX };
 
 struct tic_field {
 	enum f_type type;
@@ -59,6 +59,10 @@ struct tic_field *make_field(enum f_type type, char *label, char *horodate, char
 			field->data.i = (int)strtol(data, NULL, 10);
 			free(data);
 			break;
+		case F_HEX:
+			field->data.i = (int)strtol(data, NULL, 16);
+			free(data);
+			break;
 		default:
 			break;
 	}
@@ -74,6 +78,7 @@ void print_field(struct tic_field *field)
 			printf("\"%s\"", field->data.s ? field->data.s : "");
 			break;
 		case F_INT:
+		case F_HEX:
 			printf("%d", field->data.i);
 			break;
 	}
@@ -119,7 +124,7 @@ void free_field(struct tic_field *field)
 %token <text> ET_CCASN ET_CCASNM1 ET_CCAIN ET_CCAINM1 ET_UMOY1 ET_UMOY2 ET_UMOY3 ET_STGE ET_DPM1 ET_FPM1 ET_DPM2 ET_FPM2 ET_DPM3 ET_FPM3
 %token <text> ET_MSG1 ET_MSG2 ET_PRM ET_RELAIS ET_NTARF ET_NJOURF ET_NJOURFP1 ET_PJOURFP1 ET_PPOINTE
 
-%type <text> etiquette_str_horodate etiquette_str_nodate etiquette_int_horodate etiquette_int_nodate
+%type <text> etiquette_str_horodate etiquette_str_nodate etiquette_int_horodate etiquette_int_nodate etiquette_hex_nodate
 %type <field> field_horodate field_nodate field
 
 %destructor { free($$); } <text>
@@ -179,6 +184,7 @@ field_horodate:
 field_nodate:
 	etiquette_str_nodate TOK_SEP TOK_DATA TOK_SEP	{ $$ = make_field(F_STRING, $1, NULL, $3); }
 	| etiquette_int_nodate TOK_SEP TOK_DATA TOK_SEP	{ $$ = make_field(F_INT, $1, NULL, $3); }
+	| etiquette_hex_nodate TOK_SEP TOK_DATA TOK_SEP	{ $$ = make_field(F_HEX, $1, NULL, $3); }
 ;
 
 etiquette_str_horodate:
@@ -216,12 +222,15 @@ etiquette_str_nodate:
 	| ET_VTIC
 	| ET_NGTF
 	| ET_LTARF
-	| ET_STGE
 	| ET_MSG1
 	| ET_MSG2
 	| ET_PRM
 	| ET_PJOURFP1
 	| ET_PPOINTE
+;
+
+etiquette_hex_nodate:
+	ET_STGE
 ;
 
 etiquette_int_nodate:
