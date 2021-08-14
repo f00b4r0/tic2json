@@ -31,6 +31,7 @@
 static int hooked;
 static char fdelim;
 static int optflags;
+static unsigned int skipframes, framecount;
 
 enum {
 	OPT_MASKZEROES	= 0x01,
@@ -76,6 +77,9 @@ void make_field(struct tic_field *field, enum f_type type, const struct tic_etiq
 
 void print_field(struct tic_field *field)
 {
+	if (framecount)
+		return;
+
 	if ((optflags & OPT_MASKZEROES) && (F_INT == field->type) && (0 == field->data.i))
 		return;
 
@@ -145,17 +149,22 @@ void free_field(struct tic_field *field)
 frames:
 	frame
 	| frames frame
+		{
+			if (hooked && !framecount--) {
+				framecount = skipframes;
+				printf ("]\n[");
+			}
+			fdelim=' ';
+		}
 ;
 
 frame:
 	TOK_STX datasets TOK_ETX
 		{
 			if (!hooked) { hooked=1; printf("["); }
-			else { fdelim=' '; printf ("]\n["); }
 		}
 	| error TOK_ETX
 		{
-			if (hooked) { fdelim=' '; printf ("]\n["); }
 			fprintf(stderr, "frame error\n");
 			yyerrok;
 		}
@@ -288,9 +297,10 @@ etiquette_int_nodate:
 void usage(char *progname)
 {
 	printf("usage: %s [-hrz]\n"
-		" -h\tshows this help message\n"
-		" -n\tseparates each field with a newline for readability\n"
-		" -z\tmask all-zero numeric values from the output\n",
+		" -h\t\t"	"shows this help message\n"
+		" -n\t\t"	"separates each field with a newline for readability\n"
+		" -s <number>\t""prints every <number> frame\n"
+		" -z\t\t"	"masks all-zero numeric values from the output\n",
 		progname);
 }
 
@@ -301,14 +311,18 @@ int main(int argc, char **argv)
 	hooked = 0;
 	fdelim = ' ';
 	optflags = 0;
+	skipframes = framecount = 0;
 
-	while ((ch = getopt(argc, argv, "hnz")) != -1) {
+	while ((ch = getopt(argc, argv, "hns:z")) != -1) {
 		switch (ch) {
 		case 'h':
 			usage(argv[0]);
 			return 0;
 		case 'n':
 			optflags |= OPT_CRFIELD;
+			break;
+		case 's':
+			skipframes = (unsigned int)strtol(optarg, NULL, 10);
 			break;
 		case 'z':
 			optflags |= OPT_MASKZEROES;
