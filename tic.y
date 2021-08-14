@@ -7,10 +7,10 @@
 //
 
 /*
- * Outputs as JSON a list of frames which contains a list of fields.
+ * Outputs as JSON a series of frames formatted as a list of fields.
  * Fields are { "label": "xxx", "data": "xxx", horodate: "xxx" } with horodate optional and data possibly empty.
- * Data errors can result in some/all fields being omitted in the output frame.
- * Output JSON is guaranteed to always be valid.
+ * Data errors can result in some/all fields being omitted in the output frame: the JSON list is then empty.
+ * Output JSON is guaranteed to always be valid for each frame.
  * This parser complies with Enedis-NOI-CPT_54E.pdf version 3.
  */
 
@@ -146,12 +146,12 @@ frames:
 frame:
 	TOK_STX datasets TOK_ETX
 		{
-			if (!hooked) { hooked=1; printf("[\n["); }
-			else { fdelim=' '; printf ("],\n["); }
+			if (!hooked) { hooked=1; printf("["); }
+			else { fdelim=' '; printf ("]\n["); }
 		}
 	| error TOK_ETX
 		{
-			if (hooked) { fdelim=' '; printf ("],\n["); }
+			if (hooked) { fdelim=' '; printf ("]\n["); }
 			fprintf(stderr, "frame error\n");
 			yyerrok;
 		}
@@ -301,7 +301,7 @@ int main(int argc, char **argv)
 	argv += optind;
 
 	yyparse();
-	printf("]\n]\n");
+	printf("]\n");
 	yylex_destroy();
 
 	return 0;
