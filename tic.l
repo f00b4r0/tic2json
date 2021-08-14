@@ -19,6 +19,9 @@
 /* batch means that we'll never use the generated lexer interactively. */
 %option batch
 
+/* we only process 7-bit input */
+%option 7bit
+
 /* Enables debug mode. To see the debug messages, one needs to also set
  yy_flex_debug to 1, then the debug messages will be printed on stderr. */
 %option nodebug
