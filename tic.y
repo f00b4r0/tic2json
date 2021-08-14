@@ -31,7 +31,7 @@ static int hooked;
 static char fdelim;
 static int mask_allzeros;
 
-void make_field(struct tic_field *field, enum f_type type, char *label, char *horodate, char *data)
+void make_field(struct tic_field *field, enum f_type type, const char *label, char *horodate, char *data)
 {
 	if (!field)
 		return;
@@ -78,7 +78,6 @@ void print_field(struct tic_field *field)
 
 void free_field(struct tic_field *field)
 {
-	free(field->label);
 	free(field->horodate);
 	switch (field->type) {
 		case F_STRING:
@@ -93,6 +92,7 @@ void free_field(struct tic_field *field)
 
 %union {
 	char *text;
+	const char *label;
 	struct tic_field field;
 }
 
@@ -103,21 +103,21 @@ void free_field(struct tic_field *field)
 
 %token <text> TOK_HDATE TOK_DATA
 
-%token <text> ET_ADSC ET_VTIC ET_DATE ET_NGTF ET_LTARF
-%token <text> ET_EAST ET_EASF01 ET_EASF02 ET_EASF03 ET_EASF04 ET_EASF05 ET_EASF06 ET_EASF07 ET_EASF08 ET_EASF09 ET_EASF10
-%token <text> ET_EASD01 ET_EASD02 ET_EASD03 ET_EASD04 ET_EAIT ET_ERQ1 ET_ERQ2 ET_ERQ3 ET_ERQ4
-%token <text> ET_IRMS1 ET_IRMS2 ET_IRMS3 ET_URMS1 ET_URMS2 ET_URMS3 ET_PREF ET_PCOUP
-%token <text> ET_SINSTS ET_SINSTS1 ET_SINSTS2 ET_SINSTS3 ET_SMAXSN ET_SMAXSN1 ET_SMAXSN2 ET_SMAXSN3
-%token <text> ET_SMAXSNM1 ET_SMAXSN1M1 ET_SMAXSN2M1 ET_SMAXSN3M1 ET_SINSTI ET_SMAXIN ET_SMAXINM1
-%token <text> ET_CCASN ET_CCASNM1 ET_CCAIN ET_CCAINM1 ET_UMOY1 ET_UMOY2 ET_UMOY3 ET_STGE ET_DPM1 ET_FPM1 ET_DPM2 ET_FPM2 ET_DPM3 ET_FPM3
-%token <text> ET_MSG1 ET_MSG2 ET_PRM ET_RELAIS ET_NTARF ET_NJOURF ET_NJOURFP1 ET_PJOURFP1 ET_PPOINTE
+%token <label> ET_ADSC ET_VTIC ET_DATE ET_NGTF ET_LTARF
+%token <label> ET_EAST ET_EASF01 ET_EASF02 ET_EASF03 ET_EASF04 ET_EASF05 ET_EASF06 ET_EASF07 ET_EASF08 ET_EASF09 ET_EASF10
+%token <label> ET_EASD01 ET_EASD02 ET_EASD03 ET_EASD04 ET_EAIT ET_ERQ1 ET_ERQ2 ET_ERQ3 ET_ERQ4
+%token <label> ET_IRMS1 ET_IRMS2 ET_IRMS3 ET_URMS1 ET_URMS2 ET_URMS3 ET_PREF ET_PCOUP
+%token <label> ET_SINSTS ET_SINSTS1 ET_SINSTS2 ET_SINSTS3 ET_SMAXSN ET_SMAXSN1 ET_SMAXSN2 ET_SMAXSN3
+%token <label> ET_SMAXSNM1 ET_SMAXSN1M1 ET_SMAXSN2M1 ET_SMAXSN3M1 ET_SINSTI ET_SMAXIN ET_SMAXINM1
+%token <label> ET_CCASN ET_CCASNM1 ET_CCAIN ET_CCAINM1 ET_UMOY1 ET_UMOY2 ET_UMOY3 ET_STGE ET_DPM1 ET_FPM1 ET_DPM2 ET_FPM2 ET_DPM3 ET_FPM3
+%token <label> ET_MSG1 ET_MSG2 ET_PRM ET_RELAIS ET_NTARF ET_NJOURF ET_NJOURFP1 ET_PJOURFP1 ET_PPOINTE
 
-%type <text> etiquette_str_horodate etiquette_str_nodate etiquette_int_horodate etiquette_int_nodate etiquette_hex_nodate
+%type <label> etiquette_str_horodate etiquette_str_nodate etiquette_int_horodate etiquette_int_nodate etiquette_hex_nodate
 %type <field> field_horodate field_nodate field
 
 %destructor { free($$); } <text>
 %destructor { free_field(&$$); } <field>
-%destructor { } <>
+%destructor { } <> <*>
 
 %%
 

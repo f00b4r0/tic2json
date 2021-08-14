@@ -13,7 +13,7 @@ enum f_type { F_STRING, F_INT, F_HEX };
 
 struct tic_field {
 	enum f_type type;
-	char *label;
+	const char *label;
 	char *horodate;
 	union {
 		char *s;
