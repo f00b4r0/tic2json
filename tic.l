@@ -30,6 +30,7 @@ CHKSUM		[\x20-\x5f]
 SEP		\x09
 
 %{
+	#include "tic.h"
 	#include "tic.tab.h"
 
 	static uint8_t checksum;

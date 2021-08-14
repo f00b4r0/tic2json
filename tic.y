@@ -20,6 +20,7 @@
 	#include <string.h>
 	#include <inttypes.h>
 	#include <unistd.h>
+	#include "tic.h"
 
 	int yylex();
 	int yylex_destroy();
@@ -30,25 +31,10 @@ static int hooked;
 static char fdelim;
 static int mask_allzeros;
 
-enum f_type { F_STRING, F_INT, F_HEX };
-
-struct tic_field {
-	enum f_type type;
-	char *label;
-	char *horodate;
-	union {
-		char *s;
-		int i;
-	} data;
-};
-
-struct tic_field *make_field(enum f_type type, char *label, char *horodate, char *data)
+void make_field(struct tic_field *field, enum f_type type, char *label, char *horodate, char *data)
 {
-	struct tic_field *field;
-
-	field = malloc(sizeof(*field));
 	if (!field)
-		return NULL;
+		return;
 
 	field->label = label;
 	field->horodate = horodate;
@@ -68,8 +54,6 @@ struct tic_field *make_field(enum f_type type, char *label, char *horodate, char
 		default:
 			break;
 	}
-
-	return field;
 }
 
 void print_field(struct tic_field *field)
@@ -103,14 +87,13 @@ void free_field(struct tic_field *field)
 		default:
 			break;
 	}
-	free(field);
 }
 
 %}
 
 %union {
 	char *text;
-	struct tic_field *field;
+	struct tic_field field;
 }
 
 %verbose
@@ -133,7 +116,7 @@ void free_field(struct tic_field *field)
 %type <field> field_horodate field_nodate field
 
 %destructor { free($$); } <text>
-%destructor { free_field($$); } <field>
+%destructor { free_field(&$$); } <field>
 %destructor { } <>
 
 %%
@@ -166,14 +149,13 @@ datasets:
 dataset:
 	FIELD_START field FIELD_OK
 		{
-			if (!$2) YYABORT;	// OOM
 			if (hooked) {
-				print_field($2);
+				print_field(&$2);
 				fdelim = ',';
 			}
-			free_field($2);
+			free_field(&$2);
 		}
-	| FIELD_START field FIELD_KO	{ if (!$2) YYABORT; fprintf(stderr, "dataset invalid checksum\n"); free_field($2); }
+	| FIELD_START field FIELD_KO	{ fprintf(stderr, "dataset invalid checksum\n"); free_field(&$2); }
 	| FIELD_START error FIELD_OK	{ fprintf(stderr, "unrecognized dataset\n"); yyerrok; }
 ;
 
@@ -182,15 +164,15 @@ field: 	field_horodate
 ;
 
 field_horodate:
-	etiquette_str_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_SEP	{ $$ = make_field(F_STRING, $1, $3, NULL); }
-	| etiquette_str_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_DATA TOK_SEP	{ $$ = make_field(F_STRING, $1, $3, $5); }
-	| etiquette_int_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_DATA TOK_SEP	{ $$ = make_field(F_INT, $1, $3, $5); }
+	etiquette_str_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_SEP	{ make_field(&$$, F_STRING, $1, $3, NULL); }
+	| etiquette_str_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_STRING, $1, $3, $5); }
+	| etiquette_int_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_INT, $1, $3, $5); }
 ;
 
 field_nodate:
-	etiquette_str_nodate TOK_SEP TOK_DATA TOK_SEP	{ $$ = make_field(F_STRING, $1, NULL, $3); }
-	| etiquette_int_nodate TOK_SEP TOK_DATA TOK_SEP	{ $$ = make_field(F_INT, $1, NULL, $3); }
-	| etiquette_hex_nodate TOK_SEP TOK_DATA TOK_SEP	{ $$ = make_field(F_HEX, $1, NULL, $3); }
+	etiquette_str_nodate TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_STRING, $1, NULL, $3); }
+	| etiquette_int_nodate TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_INT, $1, NULL, $3); }
+	| etiquette_hex_nodate TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_HEX, $1, NULL, $3); }
 ;
 
 etiquette_str_horodate:
