@@ -153,11 +153,13 @@ frame:
 		{
 			if (hooked) { fdelim=' '; printf ("],\n["); }
 			fprintf(stderr, "frame error\n");
+			yyerrok;
 		}
 ;
 
 datasets:
-	dataset
+	error		{ fprintf(stderr, "dataset error\n"); }
+	| dataset
 	| datasets dataset
 ;
 
@@ -172,8 +174,7 @@ dataset:
 			free_field($2);
 		}
 	| FIELD_START field FIELD_KO	{ if (!$2) YYABORT; fprintf(stderr, "dataset invalid checksum\n"); free_field($2); }
-	| error FIELD_OK	{ fprintf(stderr, "dataset error with valid checksum\n"); }
-	| error FIELD_KO	{ fprintf(stderr, "dataset error with invalid checksum\n"); }
+	| FIELD_START error FIELD_OK	{ fprintf(stderr, "unrecognized dataset\n"); yyerrok; }
 ;
 
 field: 	field_horodate
