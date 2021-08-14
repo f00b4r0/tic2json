@@ -159,32 +159,18 @@ frames:
 ;
 
 frame:
-	TOK_STX datasets TOK_ETX
-		{
-			if (!hooked) { hooked=1; printf("["); }
-		}
-	| error TOK_ETX
-		{
-			fprintf(stderr, "frame error\n");
-			yyerrok;
-		}
+	TOK_STX datasets TOK_ETX	{ if (!hooked) { hooked=1; printf("["); } }
+	| error TOK_ETX			{ fprintf(stderr, "frame error\n"); yyerrok; }
 ;
 
 datasets:
-	error		{ fprintf(stderr, "dataset error\n"); }
+	error				{ fprintf(stderr, "dataset error\n"); }
 	| dataset
 	| datasets dataset
 ;
 
 dataset:
-	FIELD_START field FIELD_OK
-		{
-			if (hooked) {
-				print_field(&$2);
-				fdelim = ',';
-			}
-			free_field(&$2);
-		}
+	FIELD_START field FIELD_OK	{ if (hooked) { print_field(&$2); fdelim = ','; } free_field(&$2); }
 	| FIELD_START field FIELD_KO	{ fprintf(stderr, "dataset invalid checksum\n"); free_field(&$2); }
 	| FIELD_START error FIELD_OK	{ fprintf(stderr, "unrecognized dataset\n"); yyerrok; }
 ;
@@ -194,7 +180,7 @@ field: 	field_horodate
 ;
 
 field_horodate:
-	etiquette_str_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_SEP	{ make_field(&$$, F_STRING, &$1, $3, NULL); }
+	etiquette_str_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_SEP		{ make_field(&$$, F_STRING, &$1, $3, NULL); }
 	| etiquette_str_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_STRING, &$1, $3, $5); }
 	| etiquette_int_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_INT, &$1, $3, $5); }
 ;
