@@ -11,7 +11,7 @@
  * Fields are { "label": "xxx", "desc": "xxx", "unit": "xxx", "data": "xxx", horodate: "xxx" }
  * with horodate optional, unit and data possibly empty and data being either quoted string or number.
  * Data errors can result in some/all fields being omitted in the output frame: the JSON list is then empty.
- * Output JSON is guaranteed to always be valid for each frame.
+ * Output JSON is guaranteed to always be valid for each frame. By default only frames are separated with newlines.
  * This parser complies with Enedis-NOI-CPT_54E.pdf version 3.
  */
 
@@ -30,7 +30,12 @@
 
 static int hooked;
 static char fdelim;
-static int mask_allzeros;
+static int optflags;
+
+enum {
+	OPT_MASKZEROES	= 0x01,
+	OPT_CRFIELD	= 0x02,
+};
 
 static const char * tic_units[] = {
 	[U_SANS]	= "",
@@ -71,7 +76,7 @@ void make_field(struct tic_field *field, enum f_type type, const struct tic_etiq
 
 void print_field(struct tic_field *field)
 {
-	if (mask_allzeros && (F_INT == field->type) && (0 == field->data.i))
+	if ((optflags & OPT_MASKZEROES) && (F_INT == field->type) && (0 == field->data.i))
 		return;
 
 	printf("%c{ \"label\": \"%.8s\", \"desc\": \"%s\", \"unit\": \"%s\", \"data\": ", fdelim, field->etiq.label, field->etiq.desc, tic_units[field->etiq.unit]);
@@ -87,6 +92,8 @@ void print_field(struct tic_field *field)
 	if (field->horodate)
 		printf(", \"horodate\": \"%s\"", field->horodate);
 	printf(" }");
+	if (optflags & OPT_CRFIELD)
+		printf("\n");
 }
 
 void free_field(struct tic_field *field)
@@ -278,19 +285,37 @@ etiquette_int_nodate:
 
 %%
 
+void usage(char *progname)
+{
+	printf("usage: %s [-hrz]\n"
+		" -h\tshows this help message\n"
+		" -n\tseparates each field with a newline for readability\n"
+		" -z\tmask all-zero numeric values from the output\n",
+		progname);
+}
+
 int main(int argc, char **argv)
 {
 	int ch;
 
 	hooked = 0;
 	fdelim = ' ';
-	mask_allzeros = 0;
+	optflags = 0;
 
-	while ((ch = getopt(argc, argv, "z")) != -1) {
+	while ((ch = getopt(argc, argv, "hnz")) != -1) {
 		switch (ch) {
-		case 'z':
-			mask_allzeros = 1;
+		case 'h':
+			usage(argv[0]);
+			return 0;
+		case 'n':
+			optflags |= OPT_CRFIELD;
 			break;
+		case 'z':
+			optflags |= OPT_MASKZEROES;
+			break;
+		default:
+			usage(argv[0]);
+			exit(-1);
 		}
 	}
 	argc -= optind;
