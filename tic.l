@@ -59,33 +59,6 @@ SEP		\x09
 		}
 
 
-	/* etiquettes - mode historique mono - non supporté */
-	/*
-ADCO
-OPTARIF
-ISOUSC
-BASE
-HCHC
-HCHP
-EJPHN
-EJPHPM
-BBRHCJB
-BBRHPJB
-BBRHCJW
-BBRHPJW
-BBRHCJR
-BBRHPJR
-PEJP
-PTEC
-DEMAIN
-IINST
-ADPS
-IMAX
-PAPP
-HHPHC
-MOTDETAT
-	 */
-
 	/* etiquettes - mode standard */
 ADSC		{ crc_calc(); yylval.label = "ADSC"; return ET_ADSC; }
 VTIC		{ crc_calc(); yylval.label = "VTIC"; return ET_VTIC; }
