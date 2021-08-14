@@ -8,7 +8,8 @@
 
 /*
  * Outputs as JSON a series of frames formatted as a list of fields.
- * Fields are { "label": "xxx", "data": "xxx", horodate: "xxx" } with horodate optional and data possibly empty.
+ * Fields are { "label": "xxx", "desc": "xxx", "unit": "xxx", "data": "xxx", horodate: "xxx" }
+ * with horodate optional, unit and data possibly empty and data being either quoted string or number.
  * Data errors can result in some/all fields being omitted in the output frame: the JSON list is then empty.
  * Output JSON is guaranteed to always be valid for each frame.
  * This parser complies with Enedis-NOI-CPT_54E.pdf version 3.
@@ -31,14 +32,26 @@ static int hooked;
 static char fdelim;
 static int mask_allzeros;
 
-void make_field(struct tic_field *field, enum f_type type, const char *label, char *horodate, char *data)
+static const char * tic_units[] = {
+	[U_SANS]	= "",
+	[U_WH]		= "Wh",
+	[U_VARH]	= "VArh",
+	[U_A]		= "A",
+	[U_V]		= "V",
+	[U_KVA]		= "kVA",
+	[U_VA]		= "VA",
+	[U_W]		= "W",
+};
+
+void make_field(struct tic_field *field, enum f_type type, const struct tic_etiquette *etiq, char *horodate, char *data)
 {
 	if (!field)
 		return;
 
-	field->label = label;
-	field->horodate = horodate;
 	field->type = type;
+	field->horodate = horodate;
+	memcpy(&field->etiq, etiq, sizeof(field->etiq));
+
 	switch (type) {
 		case F_STRING:
 			field->data.s = data;
@@ -61,7 +74,7 @@ void print_field(struct tic_field *field)
 	if (mask_allzeros && (F_INT == field->type) && (0 == field->data.i))
 		return;
 
-	printf("%c{ \"label\": \"%.8s\", \"data\": ", fdelim, field->label);
+	printf("%c{ \"label\": \"%.8s\", \"desc\": \"%s\", \"unit\": \"%s\", \"data\": ", fdelim, field->etiq.label, field->etiq.desc, tic_units[field->etiq.unit]);
 	switch (field->type) {
 		case F_STRING:
 			printf("\"%s\"", field->data.s ? field->data.s : "");
@@ -165,15 +178,15 @@ field: 	field_horodate
 ;
 
 field_horodate:
-	etiquette_str_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_SEP	{ make_field(&$$, F_STRING, $1.label, $3, NULL); }
-	| etiquette_str_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_STRING, $1.label, $3, $5); }
-	| etiquette_int_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_INT, $1.label, $3, $5); }
+	etiquette_str_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_SEP	{ make_field(&$$, F_STRING, &$1, $3, NULL); }
+	| etiquette_str_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_STRING, &$1, $3, $5); }
+	| etiquette_int_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_INT, &$1, $3, $5); }
 ;
 
 field_nodate:
-	etiquette_str_nodate TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_STRING, $1.label, NULL, $3); }
-	| etiquette_int_nodate TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_INT, $1.label, NULL, $3); }
-	| etiquette_hex_nodate TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_HEX, $1.label, NULL, $3); }
+	etiquette_str_nodate TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_STRING, &$1, NULL, $3); }
+	| etiquette_int_nodate TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_INT, &$1, NULL, $3); }
+	| etiquette_hex_nodate TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, F_HEX, &$1, NULL, $3); }
 ;
 
 etiquette_str_horodate:

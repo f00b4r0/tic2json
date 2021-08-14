@@ -30,8 +30,8 @@ enum f_type { F_STRING, F_INT, F_HEX };
 
 struct tic_field {
 	enum f_type type;
-	const char *label;
 	char *horodate;
+	struct tic_etiquette etiq;
 	union {
 		char *s;
 		int i;
