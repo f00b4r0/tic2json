@@ -21,6 +21,7 @@ enum tic_unit {
 };
 
 struct tic_etiquette {
+	short tok;
 	enum tic_unit unit;
 	const char *label;
 	const char *desc;

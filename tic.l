@@ -26,6 +26,8 @@
  yy_flex_debug to 1, then the debug messages will be printed on stderr. */
 %option nodebug
 
+%s FILTER
+
 HORODATE	[ EeHh][0-9]{12}
 DATAC		[\x20-\x7e]
 CHKSUM		[\x20-\x5f]
@@ -36,6 +38,7 @@ SEP		\x09
 	#include "tic.h"
 	#include "tic.tab.h"
 
+	extern int filter_mode;
 	static uint8_t checksum;
 
 	static void crc_calc(void)
@@ -47,12 +50,19 @@ SEP		\x09
 
 %%
 
+	if (filter_mode)
+		BEGIN(FILTER);
+
+	/* only for filter */
+<FILTER>"#"ticfilter\n	{ return TICFILTER; }
+<FILTER>[ \t\n]+                /* ignore whitespace */
+
 	/* balises */
-\x02		{ return TOK_STX; }
-\x03		{ return TOK_ETX; }
-\x0a		{ checksum=0; return FIELD_START; }
-{SEP}		{ checksum += (uint8_t)*yytext; return TOK_SEP; }
-{CHKSUM}\x0d	{
+<INITIAL>\x02		{ return TOK_STX; }
+<INITIAL>\x03		{ return TOK_ETX; }
+<INITIAL>\x0a		{ checksum=0; return FIELD_START; }
+<INITIAL>{SEP}		{ checksum += (uint8_t)*yytext; return TOK_SEP; }
+<INITIAL>{CHKSUM}\x0d	{
 			checksum = (checksum & 0x3f) + 0x20;
 			if (checksum == (uint8_t)yytext[0]) return FIELD_OK;
 			else return FIELD_KO;
@@ -132,10 +142,10 @@ NJOURF\+1	{ crc_calc(); yylval.label = "NJOURF+1"; return ET_NJOURFP1; }
 PJOURF\+1	{ crc_calc(); yylval.label = "PJOURF+1"; return ET_PJOURFP1; }
 PPOINTE		{ crc_calc(); yylval.label = "PPOINTE"; return ET_PPOINTE; }
 
-{HORODATE}	{ crc_calc(); yylval.text = strdup(yytext); return TOK_HDATE; }
-{DATAC}+	{ crc_calc(); yylval.text = strdup(yytext); return TOK_DATA; }
+<INITIAL>{HORODATE}	{ crc_calc(); yylval.text = strdup(yytext); return TOK_HDATE; }
+<INITIAL>{DATAC}+	{ crc_calc(); yylval.text = strdup(yytext); return TOK_DATA; }
 
-.		{ fprintf(stderr, "spurious character 0x%02hhx\n", *yytext); /* ignore */ }
+.		{ fprintf(stderr, "spurious character 0x%02hhx\n", *yytext); return *yytext; }
 
 <<EOF>>		{ yyterminate(); }
 %%
