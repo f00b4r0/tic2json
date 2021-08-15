@@ -1,0 +1,39 @@
+Licence: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
+Copyright: (C) 2021 Thibaut VARENE
+
+tic2json: an ENEDIS TIC protocol parser and converter
+
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ version 2, as published by the Free Software Foundation.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+Dependencies: gcc flex bison
+
+To build, run 'make'
+
+TIC output from electronic meters is either:
+ - 7E1@1200bps for "historique" mode
+ - 7E1@9600bps for "standard" mode
+
+The current implementation only supports TIC version 02 at this time.
+
+A tty interfaced to the meter TIC output can be set using the following `stty`
+settings:
+1:0:9ad:0:3:1c:7f:15:4:5:1:0:11:13:1a:0:12:f:17:16:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0
+
+The output of this tool is suitable for feeding a Telegraf socket_listener
+configured as follows:
+
+[[inputs.socket_listener]]
+  service_address = "udp://:8094"
+  data_format = "json"
+  json_strict = true
+  json_name_key = "label"
+
+The following command line can be used to send adequate data:
+stdbuf -oL ./tic2json < /dev/ttyS0 2>/dev/null | while read line; do echo "$line" | nc -q 0 -u telegraf_host 8094; done
