@@ -175,7 +175,7 @@ void free_field(struct tic_field *field)
 %token <label> ET_CCASN ET_CCASNM1 ET_CCAIN ET_CCAINM1 ET_UMOY1 ET_UMOY2 ET_UMOY3 ET_STGE ET_DPM1 ET_FPM1 ET_DPM2 ET_FPM2 ET_DPM3 ET_FPM3
 %token <label> ET_MSG1 ET_MSG2 ET_PRM ET_RELAIS ET_NTARF ET_NJOURF ET_NJOURFP1 ET_PJOURFP1 ET_PPOINTE
 
-%type <etiq> etiquette etiquette_str_horodate etiquette_str_nodate etiquette_int_horodate etiquette_int_nodate etiquette_hex_nodate
+%type <etiq> etiquette etiquette_horodate etiquette_nodate
 %type <field> field_horodate field_nodate field
 
 %destructor { free($$); } <text>
@@ -197,11 +197,8 @@ etiquettes:
 ;
 
 etiquette:
-	etiquette_str_horodate
-	| etiquette_str_nodate
-	| etiquette_int_horodate
-	| etiquette_int_nodate
-	| etiquette_hex_nodate
+	etiquette_horodate
+	| etiquette_nodate
 	| error			{ YYABORT; }
 ;
 
@@ -240,29 +237,17 @@ field: 	field_horodate
 ;
 
 field_horodate:
-	etiquette_str_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_SEP		{ make_field(&$$, &$1, $3, NULL); }
-	| etiquette_str_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, &$1, $3, $5); }
-	| etiquette_int_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, &$1, $3, $5); }
+	etiquette_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_SEP		{ make_field(&$$, &$1, $3, NULL); }
+	| etiquette_horodate TOK_SEP TOK_HDATE TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, &$1, $3, $5); }
 ;
 
 field_nodate:
-	etiquette_str_nodate TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, &$1, NULL, $3); }
-	| etiquette_int_nodate TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, &$1, NULL, $3); }
-	| etiquette_hex_nodate TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, &$1, NULL, $3); }
+	etiquette_nodate TOK_SEP TOK_DATA TOK_SEP	{ make_field(&$$, &$1, NULL, $3); }
 ;
 
-etiquette_str_horodate:
+etiquette_horodate:
 	ET_DATE		{ $$.tok=yytranslate[ET_DATE]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Date et heure courante"; }
-	| ET_DPM1	{ $$.tok=yytranslate[ET_DPM1]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Début Pointe Mobile 1"; }
-	| ET_FPM1	{ $$.tok=yytranslate[ET_FPM1]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Fin Pointe Mobile 1"; }
-	| ET_DPM2	{ $$.tok=yytranslate[ET_DPM2]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Début Pointe Mobile 2"; }
-	| ET_FPM2	{ $$.tok=yytranslate[ET_FPM2]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Fin Pointe Mobile 2"; }
-	| ET_DPM3	{ $$.tok=yytranslate[ET_DPM3]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Début Pointe Mobile 3"; }
-	| ET_FPM3	{ $$.tok=yytranslate[ET_FPM3]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Fin Pointe Mobile 3"; }
-;
-
-etiquette_int_horodate:
-	ET_SMAXSN	{ $$.tok=yytranslate[ET_SMAXSN]; $$.unittype=U_VA; $$.label=$1; $$.desc="Puissance app. max soutirée n"; }
+	| ET_SMAXSN	{ $$.tok=yytranslate[ET_SMAXSN]; $$.unittype=U_VA; $$.label=$1; $$.desc="Puissance app. max soutirée n"; }
 	| ET_SMAXSN1	{ $$.tok=yytranslate[ET_SMAXSN1]; $$.unittype=U_VA; $$.label=$1; $$.desc="Puissance app. max soutirée n phase 1"; }
 	| ET_SMAXSN2	{ $$.tok=yytranslate[ET_SMAXSN2]; $$.unittype=U_VA; $$.label=$1; $$.desc="Puissance app. max soutirée n phase 2"; }
 	| ET_SMAXSN3	{ $$.tok=yytranslate[ET_SMAXSN3]; $$.unittype=U_VA; $$.label=$1; $$.desc="Puissance app. max soutirée n phase 3"; }
@@ -279,26 +264,20 @@ etiquette_int_horodate:
 	| ET_UMOY1	{ $$.tok=yytranslate[ET_UMOY1]; $$.unittype=U_V; $$.label=$1; $$.desc="Tension moy. ph. 1"; }
 	| ET_UMOY2	{ $$.tok=yytranslate[ET_UMOY2]; $$.unittype=U_V; $$.label=$1; $$.desc="Tension moy. ph. 2"; }
 	| ET_UMOY3	{ $$.tok=yytranslate[ET_UMOY3]; $$.unittype=U_V; $$.label=$1; $$.desc="Tension moy. ph. 3"; }
+	| ET_DPM1	{ $$.tok=yytranslate[ET_DPM1]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Début Pointe Mobile 1"; }
+	| ET_FPM1	{ $$.tok=yytranslate[ET_FPM1]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Fin Pointe Mobile 1"; }
+	| ET_DPM2	{ $$.tok=yytranslate[ET_DPM2]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Début Pointe Mobile 2"; }
+	| ET_FPM2	{ $$.tok=yytranslate[ET_FPM2]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Fin Pointe Mobile 2"; }
+	| ET_DPM3	{ $$.tok=yytranslate[ET_DPM3]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Début Pointe Mobile 3"; }
+	| ET_FPM3	{ $$.tok=yytranslate[ET_FPM3]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Fin Pointe Mobile 3"; }
 ;
 
-etiquette_str_nodate:
+etiquette_nodate:
 	ET_ADSC		{ $$.tok=yytranslate[ET_ADSC]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Adresse Secondaire du Compteur"; }
 	| ET_VTIC	{ $$.tok=yytranslate[ET_VTIC]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Version de la TIC"; }
 	| ET_NGTF	{ $$.tok=yytranslate[ET_NGTF]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Nom du calendrier tarifaire fournisseur"; }
 	| ET_LTARF	{ $$.tok=yytranslate[ET_LTARF]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Libellé tarif fournisseur en cours"; }
-	| ET_MSG1	{ $$.tok=yytranslate[ET_MSG1]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Message court"; }
-	| ET_MSG2	{ $$.tok=yytranslate[ET_MSG2]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Message Ultra court"; }
-	| ET_PRM	{ $$.tok=yytranslate[ET_PRM]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="PRM"; }
-	| ET_PJOURFP1	{ $$.tok=yytranslate[ET_PJOURFP1]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Profil du prochain jour calendrier fournisseur"; }
-	| ET_PPOINTE	{ $$.tok=yytranslate[ET_PPOINTE]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Profil du prochain jour de pointe"; }
-;
-
-etiquette_hex_nodate:
-	ET_STGE		{ $$.tok=yytranslate[ET_STGE]; $$.unittype=U_SANS|T_HEX; $$.label=$1; $$.desc="Registre de Statuts"; }
-;
-
-etiquette_int_nodate:
-	ET_EAST		{ $$.tok=yytranslate[ET_EAST]; $$.unittype=U_WH; $$.label=$1; $$.desc="Energie active soutirée totale"; }
+	| ET_EAST	{ $$.tok=yytranslate[ET_EAST]; $$.unittype=U_WH; $$.label=$1; $$.desc="Energie active soutirée totale"; }
 	| ET_EASF01	{ $$.tok=yytranslate[ET_EASF01]; $$.unittype=U_WH; $$.label=$1; $$.desc="Energie active soutirée Fournisseur, index 01"; }
 	| ET_EASF02	{ $$.tok=yytranslate[ET_EASF02]; $$.unittype=U_WH; $$.label=$1; $$.desc="Energie active soutirée Fournisseur, index 02"; }
 	| ET_EASF03	{ $$.tok=yytranslate[ET_EASF03]; $$.unittype=U_WH; $$.label=$1; $$.desc="Energie active soutirée Fournisseur, index 03"; }
@@ -331,10 +310,16 @@ etiquette_int_nodate:
 	| ET_SINSTS2	{ $$.tok=yytranslate[ET_SINSTS2]; $$.unittype=U_VA; $$.label=$1; $$.desc="Puissance app. Instantannée soutirée phase 2"; }
 	| ET_SINSTS3	{ $$.tok=yytranslate[ET_SINSTS3]; $$.unittype=U_VA; $$.label=$1; $$.desc="Puissance app. Instantannée soutirée phase 3"; }
 	| ET_SINSTI	{ $$.tok=yytranslate[ET_SINSTI]; $$.unittype=U_VA; $$.label=$1; $$.desc="Puissance app. Instantannée injectée"; }
+	| ET_STGE	{ $$.tok=yytranslate[ET_STGE]; $$.unittype=U_SANS|T_HEX; $$.label=$1; $$.desc="Registre de Statuts"; }
+	| ET_MSG1	{ $$.tok=yytranslate[ET_MSG1]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Message court"; }
+	| ET_MSG2	{ $$.tok=yytranslate[ET_MSG2]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Message Ultra court"; }
+	| ET_PRM	{ $$.tok=yytranslate[ET_PRM]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="PRM"; }
 	| ET_RELAIS	{ $$.tok=yytranslate[ET_RELAIS]; $$.unittype=U_SANS; $$.label=$1; $$.desc="Relais"; }
 	| ET_NTARF	{ $$.tok=yytranslate[ET_NTARF]; $$.unittype=U_SANS; $$.label=$1; $$.desc="Numéro de l'index tarifaire en cours"; }
 	| ET_NJOURF	{ $$.tok=yytranslate[ET_NJOURF]; $$.unittype=U_SANS; $$.label=$1; $$.desc="Numéro du jour en cours calendrier fournisseur"; }
 	| ET_NJOURFP1	{ $$.tok=yytranslate[ET_NJOURFP1]; $$.unittype=U_SANS; $$.label=$1; $$.desc="Numéro du prochain jour calendrier fournisseur"; }
+	| ET_PJOURFP1	{ $$.tok=yytranslate[ET_PJOURFP1]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Profil du prochain jour calendrier fournisseur"; }
+	| ET_PPOINTE	{ $$.tok=yytranslate[ET_PPOINTE]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Profil du prochain jour de pointe"; }
 ;
 
 
