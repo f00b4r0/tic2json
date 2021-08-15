@@ -220,19 +220,19 @@ frames:
 
 frame:
 	TOK_STX datasets TOK_ETX
-	| error TOK_ETX			{ fprintf(stderr, "frame error\n"); yyerrok; }
+	| error TOK_ETX			{ pr_err("frame error\n"); yyerrok; }
 ;
 
 datasets:
-	error				{ fprintf(stderr, "dataset error\n"); }
+	error				{ pr_err("dataset error\n"); }
 	| dataset
 	| datasets dataset
 ;
 
 dataset:
 	FIELD_START field FIELD_OK	{ print_field(&$2); free_field(&$2); }
-	| FIELD_START field FIELD_KO	{ fprintf(stderr, "dataset invalid checksum\n"); free_field(&$2); }
-	| FIELD_START error FIELD_OK	{ fprintf(stderr, "unrecognized dataset\n"); yyerrok; }
+	| FIELD_START field FIELD_KO	{ pr_err("dataset invalid checksum\n"); free_field(&$2); }
+	| FIELD_START error FIELD_OK	{ pr_err("unrecognized dataset\n"); yyerrok; }
 ;
 
 field: 	field_horodate
@@ -328,6 +328,7 @@ etiquette_nodate:
 
 %%
 
+#ifndef BAREBUILD
 void usage(char *progname)
 {
 	printf("usage: %s [-dhlnrz] [-e fichier] [-s N]\n"
@@ -359,7 +360,7 @@ void parse_config(const char *filename)
 
 	filter_mode = 1;
 	if (yyparse()) {
-		fprintf(stderr, "%s: filter config error!\n", filename);
+		pr_err("%s: filter config error!\n", filename);
 		exit(-1);
 	}
 
@@ -368,6 +369,7 @@ void parse_config(const char *filename)
 	yyin = stdin;
 	filter_mode = 0;
 }
+#endif /* !BAREBUILD */
 
 int main(int argc, char **argv)
 {
@@ -380,6 +382,7 @@ int main(int argc, char **argv)
 	filter_mode = 0;
 	etiq_en = NULL;
 
+#ifndef BAREBUILD
 	while ((ch = getopt(argc, argv, "de:hlnrs:z")) != -1) {
 		switch (ch) {
 		case 'd':
@@ -414,6 +417,7 @@ int main(int argc, char **argv)
 	}
 	argc -= optind;
 	argv += optind;
+#endif /* !BAREBUILD */
 
 	putchar(framedelims[0]);
 	yyparse();

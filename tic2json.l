@@ -151,7 +151,7 @@ PPOINTE		{ crc_calc(); yylval.label = "PPOINTE"; return ET_PPOINTE; }
 <INITIAL>{HORODATE}	{ crc_calc(); yylval.text = strdup(yytext); return TOK_HDATE; }
 <INITIAL>{DATAC}+	{ crc_calc(); yylval.text = strdup(yytext); return TOK_DATA; }
 
-.		{ fprintf(stderr, "spurious character 0x%02hhx\n", *yytext); return *yytext; }
+.		{ pr_err("spurious character 0x%02hhx\n", *yytext); return *yytext; }
 
 <<EOF>>		{ yyterminate(); }
 %%

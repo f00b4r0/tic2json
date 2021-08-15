@@ -11,6 +11,13 @@
 
 #include <inttypes.h>
 
+#ifdef BAREBUILD
+ #define pr_err(format, ...)    /* nothing */
+#else
+ #define pr_err(format, ...)    fprintf(stderr, format, ## __VA_ARGS__)
+#endif
+
+
 // The code assumes this fits on 4 bits
 enum tic_unit {
 	U_SANS = 0x00,
