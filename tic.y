@@ -7,12 +7,16 @@
 //
 
 /*
- * Outputs as JSON a series of frames formatted as a list of fields.
- * Fields are { "label": "xxx", "desc": "xxx", "unit": "xxx", "data": "xxx", horodate: "xxx" }
- * with horodate optional, unit and data possibly empty and data being either quoted string or number.
- * Data errors can result in some/all fields being omitted in the output frame: the JSON list is then empty.
+ * Outputs as JSON a series of frames formatted as a list of fields or a dictionary.
+ * - for list mode, fields are { "label": "xxx", "data": "xxx", horodate: "xxx", "desc": "xxx", "unit": "xxx" }
+ * - for dict mode, the keys are the label, followed by { "data": "xxx", "horodate": "xxx", "desc": "xxx", "unit": "xxx" }
+ * with horodate optional, unit and data optional and possibly empty and data being either quoted string or number.
+ *
+ * Data errors can result in some/all fields being omitted in the output frame: the JSON root object is empty but still emitted.
  * Output JSON is guaranteed to always be valid for each frame. By default only frames are separated with newlines.
  * This parser complies with Enedis-NOI-CPT_54E.pdf version 3.
+ *
+ * The parser will skip printing the first valid frame
  */
 
 %{
@@ -340,18 +344,19 @@ etiquette_int_nodate:
 
 void usage(char *progname)
 {
-	printf("usage: %s [-dfhlnrsz]\n"
-		" -d\t\t"	"output frames as dictionary instead of list\n"
-		" -f <file>\t"	"use <file> for filter configuration\n"
-		" -h\t\t"	"shows this help message\n"
-		" -l\t\t"	"print data with long description and units\n"
-		" -n\t\t"	"separates each field with a newline for readability\n"
-		" -r\t\t"	"print horodate in RFC3339 format\n"
-		" -s <number>\t""prints every <number> frame\n"
-		" -z\t\t"	"masks all-zero numeric values from the output\n"
+	printf("usage: %s [-dhlnrz] [-e fichier] [-s N]\n"
+		" -d\t\t"	"Émet les trames sous forme de dictionaire plutôt que de liste\n"
+		" -e fichier\t"	"Utilise <fichier> pour configurer le filtre d'étiquettes\n"
+		" -h\t\t"	"Montre ce message d'aide\n"
+		" -l\t\t"	"Ajoute les descriptions longues et les unitées de chaque groupe\n"
+		" -n\t\t"	"Insère une nouvelle ligne après chaque groupe\n"
+		" -r\t\t"	"Interprète les horodates en format RFC3339\n"
+		" -s N\t\t"	"Émet une trame toutes les <N> reçues\n"
+		" -z\t\t"	"Masque les groupes numériques à zéro\n"
 		"\n"
-		"Note: filter config file must start with the sequence `#ticfilter`,\n"
-		"followed by any number of TIC 'etiquettes' separated by whitespace\n"
+		"Note: le fichier de configuration du filtre d'étiquettes doit commencer par la séquence `#ticfilter`,\n"
+		"suivi d'un nombre quelconque d'étiquettes TIC séparées par du blanc (espace, nouvelle ligne, etc).\n"
+		"Seules les groupes dont les étiquettes sont ainsi listées seront alors émis par le programme.\n"
 		, progname);
 }
 
@@ -390,13 +395,13 @@ int main(int argc, char **argv)
 	filter_mode = 0;
 	etiq_en = NULL;
 
-	while ((ch = getopt(argc, argv, "df:hlnrs:z")) != -1) {
+	while ((ch = getopt(argc, argv, "de:hlnrs:z")) != -1) {
 		switch (ch) {
 		case 'd':
 			optflags |= OPT_DICTOUT;
 			framedelims[0] = '{'; framedelims[1] = '}';
 			break;
-		case 'f':
+		case 'e':
 			parse_config(optarg);
 			break;
 		case 'h':
