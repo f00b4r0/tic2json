@@ -60,6 +60,8 @@ static const char * tic_units[] = {
 
 void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char *horodate, char *data)
 {
+	int base;
+
 	if (!field)
 		return;
 
@@ -69,33 +71,33 @@ void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char 
 	switch ((etiq->unittype & 0xF0)) {
 		case T_STRING:
 			field->data.s = data;
-			break;
+			return;
 		case T_HEX:
-			field->data.i = (int)strtol(data, NULL, 16);
-			free(data);
+			base = 16;
 			break;
 		default:
-			field->data.i = (int)strtol(data, NULL, 10);
-			free(data);
+			base = 10;
 			break;
 	}
+	field->data.i = (int)strtol(data, NULL, base);
+	free(data);
 }
 
 void print_field(struct tic_field *field)
 {
-	if (framecount)
+	const char fdictout[] = "%c \"%.8s\": { \"data\": ";
+	const char flistout[] = "%c{ \"label\": \"%.8s\", \"data\": ";
+	const char *format;
+
+	// filters
+	if (framecount ||
+		((optflags & OPT_MASKZEROES) && (T_STRING != (field->etiq.unittype & 0xF0)) && (0 == field->data.i)) ||
+		(etiq_en && !etiq_en[field->etiq.tok]))
 		return;
 
-	if ((optflags & OPT_MASKZEROES) && (T_STRING != (field->etiq.unittype & 0xF0)) && (0 == field->data.i))
-		return;
+	format = (optflags & OPT_DICTOUT) ? fdictout : flistout;
 
-	if (etiq_en && !etiq_en[field->etiq.tok])
-		return;
-
-	if (optflags & OPT_DICTOUT)
-		printf("%c \"%.8s\": { \"data\": ", fdelim, field->etiq.label);
-	else
-		printf("%c{ \"label\": \"%.8s\", \"data\": ", fdelim, field->etiq.label);
+	printf(format, fdelim, field->etiq.label);
 	switch (field->etiq.unittype & 0x0F) {
 		case U_SANS:
 			if ((field->etiq.unittype & 0xF0) == T_STRING) {
@@ -107,6 +109,7 @@ void print_field(struct tic_field *field)
 			printf("%d", field->data.i);
 			break;
 	}
+
 	if (field->horodate) {
 		if (optflags & OPT_LONGDATE) {
 			const char *o, *d = field->horodate;
@@ -129,11 +132,14 @@ void print_field(struct tic_field *field)
 		else
 			printf(", \"horodate\": \"%s\"", field->horodate);
 	}
+
 	if (optflags & OPT_DESCFORM)
 		printf(", \"desc\": \"%s\", \"unit\": \"%s\"", field->etiq.desc, tic_units[(field->etiq.unittype & 0x0F)]);
-	printf(" }");
+
+	putchar('}');
 	if (optflags & OPT_CRFIELD)
-		printf("\n");
+		putchar('\n');
+
 	fdelim = ',';
 }
 
@@ -216,7 +222,7 @@ frames:
 ;
 
 frame:
-	TOK_STX datasets TOK_ETX	{ if (!hooked) { hooked=1; printf("%c", framedelims[0]); } }
+	TOK_STX datasets TOK_ETX	{ if (!hooked) { hooked=1; putchar(framedelims[0]); } }
 	| error TOK_ETX			{ fprintf(stderr, "frame error\n"); yyerrok; }
 ;
 
