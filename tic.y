@@ -41,6 +41,7 @@ enum {
 	OPT_CRFIELD	= 0x02,
 	OPT_DESCFORM	= 0x04,
 	OPT_DICTOUT	= 0x08,
+	OPT_LONGDATE	= 0x10,
 };
 
 static const char * tic_units[] = {
@@ -104,8 +105,28 @@ void print_field(struct tic_field *field)
 			printf("%d", field->data.i);
 			break;
 	}
-	if (field->horodate)
-		printf(", \"horodate\": \"%s\"", field->horodate);
+	if (field->horodate) {
+		if (optflags & OPT_LONGDATE) {
+			const char *o, *d = field->horodate;
+			switch (d[0]) {
+			default:
+			case ' ':
+				o = "";
+				break;
+			case 'E':
+			case 'e':
+				o = "+02:00";
+				break;
+			case 'H':
+			case 'h':
+				o = "+01:00";
+				break;
+			}
+			printf(", \"horodate\": \"20%.2s-%.2s-%.2sT%.2s:%.2s:%.2s%s\"", d+1, d+3, d+5, d+7, d+9, d+11, o);
+		}
+		else
+			printf(", \"horodate\": \"%s\"", field->horodate);
+	}
 	if (optflags & OPT_DESCFORM)
 		printf(", \"desc\": \"%s\", \"unit\": \"%s\"", field->etiq.desc, tic_units[field->etiq.unit]);
 	printf(" }");
@@ -319,12 +340,13 @@ etiquette_int_nodate:
 
 void usage(char *progname)
 {
-	printf("usage: %s [-dfhlnsz]\n"
+	printf("usage: %s [-dfhlnrsz]\n"
 		" -d\t\t"	"output frames as dictionary instead of list\n"
 		" -f <file>\t"	"use <file> for filter configuration\n"
 		" -h\t\t"	"shows this help message\n"
 		" -l\t\t"	"print data with long description and units\n"
 		" -n\t\t"	"separates each field with a newline for readability\n"
+		" -r\t\t"	"print horodate in RFC3339 format\n"
 		" -s <number>\t""prints every <number> frame\n"
 		" -z\t\t"	"masks all-zero numeric values from the output\n"
 		"\n"
@@ -368,7 +390,7 @@ int main(int argc, char **argv)
 	filter_mode = 0;
 	etiq_en = NULL;
 
-	while ((ch = getopt(argc, argv, "df:hlns:z")) != -1) {
+	while ((ch = getopt(argc, argv, "df:hlnrs:z")) != -1) {
 		switch (ch) {
 		case 'd':
 			optflags |= OPT_DICTOUT;
@@ -385,6 +407,9 @@ int main(int argc, char **argv)
 			break;
 		case 'n':
 			optflags |= OPT_CRFIELD;
+			break;
+		case 'r':
+			optflags |= OPT_LONGDATE;
 			break;
 		case 's':
 			skipframes = (unsigned int)strtol(optarg, NULL, 10);
