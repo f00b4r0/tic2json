@@ -1,6 +1,6 @@
 //
-//  tic.y
-//
+//  tic2json.y
+//  A parser to turn ENEDIS TIC data into pure JSON
 //
 //  (C) 2021 Thibaut VARENE
 //  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
@@ -22,7 +22,7 @@
 	#include <stdlib.h>
 	#include <string.h>
 	#include <unistd.h>
-	#include "tic.h"
+	#include "tic2json.h"
 
 	int yylex();
 	int yylex_destroy();

@@ -1,13 +1,13 @@
 //
-//  tic.h
+//  tic2json.h
 //  
 //
 //  (C) 2021 Thibaut VARENE
 //  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
 //
 
-#ifndef tic_h
-#define tic_h
+#ifndef tic2json_h
+#define tic2json_h
 
 #include <inttypes.h>
 
@@ -46,4 +46,4 @@ struct tic_field {
 	char *horodate;
 };
 
-#endif /* tic_h */
+#endif /* tic2json_h */

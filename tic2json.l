@@ -1,6 +1,6 @@
 /*
-//  tic.l
-//
+//  tic2json.l
+//  A lexer for ENEDIS TIC protocol
 //
 //  (C) 2021 Thibaut VARENE
 //  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
@@ -41,8 +41,8 @@ CHKSUM		[\x20-\x5f]
 SEP		\x09
 
 %{
-	#include "tic.h"
-	#include "tic.tab.h"
+	#include "tic2json.h"
+	#include "tic2json.tab.h"
 
 	extern int filter_mode;
 	static uint8_t checksum;

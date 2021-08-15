@@ -1,10 +1,19 @@
-all:	tic
+all:	tic2json
 
-tic:	tic.y tic.l
-	bison -Wno-other -d tic.y
+%.lex.c: %.l %.tab.h
 # The ideal size for the flex buffer is the length of the longest token expected, in bytes, plus a little more.
-	flex -DYY_BUF_SIZE=128 tic.l
-	$(CC) -Os -Wall *.c -o $@
+	flex -DYY_BUF_SIZE=128 -o$@ $<
+
+%.tab.h %.tab.c: %.y
+	bison -Wno-other -d $<
+
+tic2json:	%: %.tab.c %.lex.c
+	$(CC) -Os -Wall $^ -o $@
 
 clean:
-	$(RM) tic *.output *.tab.h *.tab.c *.yy.c
+	$(RM) tic2json *.output *.tab.h *.tab.c *.lex.c
+
+# disable implicit rules we don't want
+%.c: %.y
+%.c: %.l
+
