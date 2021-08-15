@@ -38,6 +38,7 @@ static int *etiq_en;
 enum {
 	OPT_MASKZEROES	= 0x01,
 	OPT_CRFIELD	= 0x02,
+	OPT_DESCFORM	= 0x04,
 };
 
 static const char * tic_units[] = {
@@ -88,7 +89,7 @@ void print_field(struct tic_field *field)
 	if (etiq_en && !etiq_en[field->etiq.tok])
 		return;
 
-	printf("%c{ \"label\": \"%.8s\", \"desc\": \"%s\", \"unit\": \"%s\", \"data\": ", fdelim, field->etiq.label, field->etiq.desc, tic_units[field->etiq.unit]);
+	printf("%c{ \"label\": \"%.8s\", \"data\": ", fdelim, field->etiq.label);
 	switch (field->type) {
 		case F_STRING:
 			printf("\"%s\"", field->data.s ? field->data.s : "");
@@ -100,6 +101,8 @@ void print_field(struct tic_field *field)
 	}
 	if (field->horodate)
 		printf(", \"horodate\": \"%s\"", field->horodate);
+	if (optflags & OPT_DESCFORM)
+		printf(", \"desc\": \"%s\", \"unit\": \"%s\"", field->etiq.desc, tic_units[field->etiq.unit]);
 	printf(" }");
 	if (optflags & OPT_CRFIELD)
 		printf("\n");
@@ -311,9 +314,10 @@ etiquette_int_nodate:
 
 void usage(char *progname)
 {
-	printf("usage: %s [-fhnsz]\n"
+	printf("usage: %s [-fhlnsz]\n"
 		" -f <file>\t"	"use <file> for filter configuration\n"
 		" -h\t\t"	"shows this help message\n"
+		" -l\t\t"	"print data with long description and units\n"
 		" -n\t\t"	"separates each field with a newline for readability\n"
 		" -s <number>\t""prints every <number> frame\n"
 		" -z\t\t"	"masks all-zero numeric values from the output\n"
@@ -357,7 +361,7 @@ int main(int argc, char **argv)
 	filter_mode = 0;
 	etiq_en = NULL;
 
-	while ((ch = getopt(argc, argv, "f:hns:z")) != -1) {
+	while ((ch = getopt(argc, argv, "f:hlns:z")) != -1) {
 		switch (ch) {
 		case 'f':
 			parse_config(optarg);
@@ -365,6 +369,9 @@ int main(int argc, char **argv)
 		case 'h':
 			usage(argv[0]);
 			return 0;
+		case 'l':
+			optflags |= OPT_DESCFORM;
+			break;
 		case 'n':
 			optflags |= OPT_CRFIELD;
 			break;
