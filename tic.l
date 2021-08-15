@@ -16,6 +16,12 @@
  back into the input stream. We never use such capability anyway. */
 %option nounput
 
+/* we never directly read input */
+%option noinput
+
+/* we don't need the default rule */
+%option nodefault
+
 /* batch means that we'll never use the generated lexer interactively. */
 %option batch
 
