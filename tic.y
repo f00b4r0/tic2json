@@ -15,8 +15,6 @@
  * Data errors can result in some/all fields being omitted in the output frame: the JSON root object is empty but still emitted.
  * Output JSON is guaranteed to always be valid for each frame. By default only frames are separated with newlines.
  * This parser complies with Enedis-NOI-CPT_54E.pdf version 3.
- *
- * The parser will skip printing the first valid frame
  */
 
 %{
@@ -44,8 +42,6 @@ enum {
 	OPT_DESCFORM	= 0x04,
 	OPT_DICTOUT	= 0x08,
 	OPT_LONGDATE	= 0x10,
-
-	OPT_HOOKED	= 0x80,	// hijack optflags for hook marker
 };
 
 static const char * tic_units[] = {
@@ -91,7 +87,7 @@ void print_field(struct tic_field *field)
 	const char *format;
 
 	// filters
-	if (framecount || !(optflags & OPT_HOOKED) ||
+	if (framecount ||
 		((optflags & OPT_MASKZEROES) && (T_STRING != (field->etiq.unittype & 0xF0)) && (0 == field->data.i)) ||
 		(etiq_en && !etiq_en[field->etiq.tok]))
 		return;
@@ -211,10 +207,10 @@ etiquette:
 
 /* stream processing */
 frames:
-	frame		// single/first frame is always ignored
+	frame
 	| frames frame
 		{
-			if ((optflags & OPT_HOOKED) && !framecount--) {
+			if (!framecount--) {
 				framecount = skipframes;
 				printf ("%c\n%c", framedelims[1], framedelims[0]);
 			}
@@ -223,7 +219,7 @@ frames:
 ;
 
 frame:
-	TOK_STX datasets TOK_ETX	{ if (!(optflags & OPT_HOOKED)) { (optflags |= OPT_HOOKED); putchar(framedelims[0]); } }
+	TOK_STX datasets TOK_ETX
 	| error TOK_ETX			{ fprintf(stderr, "frame error\n"); yyerrok; }
 ;
 
@@ -419,6 +415,7 @@ int main(int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 
+	putchar(framedelims[0]);
 	yyparse();
 	printf("%c\n", framedelims[1]);
 	yylex_destroy();
