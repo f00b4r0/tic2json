@@ -14,21 +14,25 @@
  *
  * Data errors can result in some/all fields being omitted in the output frame: the JSON root object is empty but still emitted.
  * Output JSON is guaranteed to always be valid for each frame. By default only frames are separated with newlines.
- * This parser complies with Enedis-NOI-CPT_54E.pdf version 3.
+ * This parser implements a complete grammar that supports TIC version 02 as specified in Enedis-NOI-CPT_54E.pdf version 3.
+ *
+ * This parser does not allocate memory, except if a filter configuration is used in which case the etiq_en array will
+ * be allocated (it's a few hundred bytes).
  */
 
 %{
-	#include <stdio.h>
-	#include <stdlib.h>
-	#include <string.h>
-	#include <unistd.h>
-	#include "tic2json.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include "tic2json.h"
 
-	int yylex();
-	int yylex_destroy();
-	extern FILE *yyin;
-	void yyerror(const char *);
-	int filter_mode;
+int yylex();
+int yylex_destroy();
+extern FILE *yyin;
+void yyerror(const char *);
+
+int filter_mode;
 
 static char framedelims[2];
 static char fdelim;
@@ -57,10 +61,8 @@ static const char * tic_units[] = {
 
 void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char *horodate, char *data)
 {
+	// args come from the bison stack
 	int base;
-
-	if (!field)
-		return;
 
 	field->horodate = horodate;
 	memcpy(&field->etiq, etiq, sizeof(field->etiq));
@@ -179,7 +181,7 @@ void free_field(struct tic_field *field)
 %token <label> ET_MSG1 ET_MSG2 ET_PRM ET_RELAIS ET_NTARF ET_NJOURF ET_NJOURFP1 ET_PJOURFP1 ET_PPOINTE
 
 %type <etiq> etiquette etiquette_horodate etiquette_nodate
-%type <field> field_horodate field_nodate field
+%type <field> field field_horodate field_nodate
 
 %destructor { free($$); } <text>
 %destructor { free_field(&$$); } <field>

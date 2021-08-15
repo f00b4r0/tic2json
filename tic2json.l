@@ -6,6 +6,11 @@
 //  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
 */
 
+/*
+ * Complete lexer for ENEDIS' TIC protocol.
+ * Currently only supports version 02, a.k.a "standard" as found on ENEDIS' LINKY smart meter.
+ */
+
 /* noyywrap disables automatic rewinding for the next file to parse. Since we
  always parse only a single string, there's no need to do any wraps. And
  using yywrap requires linking with -lfl, which provides the default yywrap
