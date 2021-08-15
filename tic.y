@@ -33,7 +33,6 @@
 	int filter_mode;
 
 static char framedelims[2];
-static int hooked;
 static char fdelim;
 static int optflags;
 static unsigned int skipframes, framecount;
@@ -45,6 +44,8 @@ enum {
 	OPT_DESCFORM	= 0x04,
 	OPT_DICTOUT	= 0x08,
 	OPT_LONGDATE	= 0x10,
+
+	OPT_HOOKED	= 0x80,	// hijack optflags for hook marker
 };
 
 static const char * tic_units[] = {
@@ -90,7 +91,7 @@ void print_field(struct tic_field *field)
 	const char *format;
 
 	// filters
-	if (framecount ||
+	if (framecount || !(optflags & OPT_HOOKED) ||
 		((optflags & OPT_MASKZEROES) && (T_STRING != (field->etiq.unittype & 0xF0)) && (0 == field->data.i)) ||
 		(etiq_en && !etiq_en[field->etiq.tok]))
 		return;
@@ -210,10 +211,10 @@ etiquette:
 
 /* stream processing */
 frames:
-	frame
+	frame		// single/first frame is always ignored
 	| frames frame
 		{
-			if (hooked && !framecount--) {
+			if ((optflags & OPT_HOOKED) && !framecount--) {
 				framecount = skipframes;
 				printf ("%c\n%c", framedelims[1], framedelims[0]);
 			}
@@ -222,7 +223,7 @@ frames:
 ;
 
 frame:
-	TOK_STX datasets TOK_ETX	{ if (!hooked) { hooked=1; putchar(framedelims[0]); } }
+	TOK_STX datasets TOK_ETX	{ if (!(optflags & OPT_HOOKED)) { (optflags |= OPT_HOOKED); putchar(framedelims[0]); } }
 	| error TOK_ETX			{ fprintf(stderr, "frame error\n"); yyerrok; }
 ;
 
@@ -233,7 +234,7 @@ datasets:
 ;
 
 dataset:
-	FIELD_START field FIELD_OK	{ if (hooked) { print_field(&$2); } free_field(&$2); }
+	FIELD_START field FIELD_OK	{ print_field(&$2); free_field(&$2); }
 	| FIELD_START field FIELD_KO	{ fprintf(stderr, "dataset invalid checksum\n"); free_field(&$2); }
 	| FIELD_START error FIELD_OK	{ fprintf(stderr, "unrecognized dataset\n"); yyerrok; }
 ;
@@ -376,7 +377,6 @@ int main(int argc, char **argv)
 {
 	int ch;
 
-	hooked = 0;
 	framedelims[0] = '['; framedelims[1] = ']';
 	fdelim = ' ';
 	optflags = 0;
