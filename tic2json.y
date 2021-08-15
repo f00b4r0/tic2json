@@ -333,9 +333,10 @@ etiquette_nodate:
 %%
 
 #ifndef BAREBUILD
-void usage(char *progname)
+void usage(void)
 {
-	printf("usage: %s [-dhlnrz] [-e fichier] [-s N]\n"
+	printf(	BINNAME " version " TIC2JSON_VER "\n"
+		"usage: " BINNAME " [-dhlnrz] [-e fichier] [-s N]\n"
 		" -d\t\t"	"Émet les trames sous forme de dictionaire plutôt que de liste\n"
 		" -e fichier\t"	"Utilise <fichier> pour configurer le filtre d'étiquettes\n"
 		" -h\t\t"	"Montre ce message d'aide\n"
@@ -348,7 +349,7 @@ void usage(char *progname)
 		"Note: le fichier de configuration du filtre d'étiquettes doit commencer par la séquence `#ticfilter`,\n"
 		"suivi d'un nombre quelconque d'étiquettes TIC séparées par du blanc (espace, nouvelle ligne, etc).\n"
 		"Seules les groupes dont les étiquettes sont ainsi listées seront alors émis par le programme.\n"
-		, progname);
+		);
 }
 
 void parse_config(const char *filename)
@@ -397,7 +398,7 @@ int main(int argc, char **argv)
 			parse_config(optarg);
 			break;
 		case 'h':
-			usage(argv[0]);
+			usage();
 			return 0;
 		case 'l':
 			optflags |= OPT_DESCFORM;
@@ -415,7 +416,7 @@ int main(int argc, char **argv)
 			optflags |= OPT_MASKZEROES;
 			break;
 		default:
-			usage(argv[0]);
+			usage();
 			exit(-1);
 		}
 	}

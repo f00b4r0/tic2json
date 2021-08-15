@@ -8,7 +8,7 @@ all:	tic2json
 	bison -Wno-other -d $<
 
 tic2json:	%: %.tab.c %.lex.c
-	$(CC) -Os -Wall $^ -o $@
+	$(CC) -DBINNAME='"$@"' -Os -Wall $^ -o $@
 
 clean:
 	$(RM) tic2json *.output *.tab.h *.tab.c *.lex.c
