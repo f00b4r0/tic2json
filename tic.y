@@ -29,6 +29,7 @@
 	void yyerror(const char *);
 	int filter_mode;
 
+static char framedelims[2];
 static int hooked;
 static char fdelim;
 static int optflags;
@@ -39,6 +40,7 @@ enum {
 	OPT_MASKZEROES	= 0x01,
 	OPT_CRFIELD	= 0x02,
 	OPT_DESCFORM	= 0x04,
+	OPT_DICTOUT	= 0x08,
 };
 
 static const char * tic_units[] = {
@@ -89,7 +91,10 @@ void print_field(struct tic_field *field)
 	if (etiq_en && !etiq_en[field->etiq.tok])
 		return;
 
-	printf("%c{ \"label\": \"%.8s\", \"data\": ", fdelim, field->etiq.label);
+	if (optflags & OPT_DICTOUT)
+		printf("%c \"%.8s\": { \"data\": ", fdelim, field->etiq.label);
+	else
+		printf("%c{ \"label\": \"%.8s\", \"data\": ", fdelim, field->etiq.label);
 	switch (field->type) {
 		case F_STRING:
 			printf("\"%s\"", field->data.s ? field->data.s : "");
@@ -184,14 +189,14 @@ frames:
 		{
 			if (hooked && !framecount--) {
 				framecount = skipframes;
-				printf ("]\n[");
+				printf ("%c\n%c", framedelims[1], framedelims[0]);
 			}
 			fdelim=' ';
 		}
 ;
 
 frame:
-	TOK_STX datasets TOK_ETX	{ if (!hooked) { hooked=1; printf("["); } }
+	TOK_STX datasets TOK_ETX	{ if (!hooked) { hooked=1; printf("%c", framedelims[0]); } }
 	| error TOK_ETX			{ fprintf(stderr, "frame error\n"); yyerrok; }
 ;
 
@@ -314,7 +319,8 @@ etiquette_int_nodate:
 
 void usage(char *progname)
 {
-	printf("usage: %s [-fhlnsz]\n"
+	printf("usage: %s [-dfhlnsz]\n"
+		" -d\t\t"	"output frames as dictionary instead of list\n"
 		" -f <file>\t"	"use <file> for filter configuration\n"
 		" -h\t\t"	"shows this help message\n"
 		" -l\t\t"	"print data with long description and units\n"
@@ -355,14 +361,19 @@ int main(int argc, char **argv)
 	int ch;
 
 	hooked = 0;
+	framedelims[0] = '['; framedelims[1] = ']';
 	fdelim = ' ';
 	optflags = 0;
 	skipframes = framecount = 0;
 	filter_mode = 0;
 	etiq_en = NULL;
 
-	while ((ch = getopt(argc, argv, "f:hlns:z")) != -1) {
+	while ((ch = getopt(argc, argv, "df:hlns:z")) != -1) {
 		switch (ch) {
+		case 'd':
+			optflags |= OPT_DICTOUT;
+			framedelims[0] = '{'; framedelims[1] = '}';
+			break;
 		case 'f':
 			parse_config(optarg);
 			break;
@@ -390,7 +401,7 @@ int main(int argc, char **argv)
 	argv += optind;
 
 	yyparse();
-	printf("]\n");
+	printf("%c\n", framedelims[1]);
 	yylex_destroy();
 
 	free(etiq_en);
