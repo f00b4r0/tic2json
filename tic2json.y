@@ -34,6 +34,7 @@ void yyerror(const char *);
 
 int filter_mode;
 
+static const char *idtag;
 static char framedelims[2];
 static char fdelim;
 static int optflags;
@@ -134,6 +135,9 @@ void print_field(struct tic_field *field)
 
 	if (optflags & OPT_DESCFORM)
 		printf(", \"desc\": \"%s\", \"unit\": \"%s\"", field->etiq.desc, tic_units[(field->etiq.unittype & 0x0F)]);
+
+	if (idtag)
+		printf(", \"id\": \"%s\"", idtag);
 
 	putchar('}');
 	if (optflags & OPT_CRFIELD)
@@ -336,10 +340,11 @@ etiquette_nodate:
 void usage(void)
 {
 	printf(	BINNAME " version " TIC2JSON_VER "\n"
-		"usage: " BINNAME " [-dhlnrz] [-e fichier] [-s N]\n"
+		"usage: " BINNAME " [-dhlnrz] [-e fichier] [-i id] [-s N]\n"
 		" -d\t\t"	"Émet les trames sous forme de dictionaire plutôt que de liste\n"
 		" -e fichier\t"	"Utilise <fichier> pour configurer le filtre d'étiquettes\n"
 		" -h\t\t"	"Montre ce message d'aide\n"
+		" -i id\t\t"	"Ajoute une balise \"id\" avec la valeur <id> à chaque groupe\n"
 		" -l\t\t"	"Ajoute les descriptions longues et les unitées de chaque groupe\n"
 		" -n\t\t"	"Insère une nouvelle ligne après chaque groupe\n"
 		" -r\t\t"	"Interprète les horodates en format RFC3339\n"
@@ -380,6 +385,7 @@ int main(int argc, char **argv)
 {
 	int ch;
 
+	idtag = NULL;
 	framedelims[0] = '['; framedelims[1] = ']';
 	fdelim = ' ';
 	optflags = 0;
@@ -388,7 +394,7 @@ int main(int argc, char **argv)
 	etiq_en = NULL;
 
 #ifndef BAREBUILD
-	while ((ch = getopt(argc, argv, "de:hlnrs:z")) != -1) {
+	while ((ch = getopt(argc, argv, "de:hi:lnrs:z")) != -1) {
 		switch (ch) {
 		case 'd':
 			optflags |= OPT_DICTOUT;
@@ -400,6 +406,9 @@ int main(int argc, char **argv)
 		case 'h':
 			usage();
 			return 0;
+		case 'i':
+			idtag = optarg;
+			break;
 		case 'l':
 			optflags |= OPT_DESCFORM;
 			break;

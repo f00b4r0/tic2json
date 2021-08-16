@@ -34,6 +34,7 @@ configured as follows:
   data_format = "json"
   json_strict = true
   json_name_key = "label"
+  tag_keys = ["id"]
 
 The following command line can be used to send adequate data:
 stdbuf -oL ./tic2json < /dev/ttyS0 2>/dev/null | while read line; do echo "$line" | nc -q 0 -u telegraf_host 8094; done
