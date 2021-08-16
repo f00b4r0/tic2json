@@ -351,9 +351,10 @@ void usage(void)
 		" -s N\t\t"	"Émet une trame toutes les <N> reçues\n"
 		" -z\t\t"	"Masque les groupes numériques à zéro\n"
 		"\n"
-		"Note: le fichier de configuration du filtre d'étiquettes doit commencer par la séquence `#ticfilter`,\n"
-		"suivi d'un nombre quelconque d'étiquettes TIC séparées par du blanc (espace, nouvelle ligne, etc).\n"
-		"Seules les groupes dont les étiquettes sont ainsi listées seront alors émis par le programme.\n"
+		"Note: le fichier de configuration du filtre d'étiquettes doit commencer par une ligne comportant\n"
+		"uniquement la séquence de caractères suivante: `#ticfilter` (sans les apostrophes), suivi à partir de\n"
+		"la ligne suivante d'un nombre quelconque d'étiquettes TIC séparées par du blanc (espace, nouvelle ligne, etc).\n"
+		"Seuls les groupes dont les étiquettes sont ainsi listées seront alors émis par le programme.\n"
 		);
 }
 
