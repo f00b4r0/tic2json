@@ -154,6 +154,15 @@ void free_field(struct tic_field *field)
 	}
 }
 
+void frame_sep(void)
+{
+	if (!framecount--) {
+		framecount = skipframes;
+		printf ("%c\n%c", framedelims[1], framedelims[0]);
+	}
+	fdelim=' ';
+}
+
 %}
 
 %union {
@@ -211,18 +220,11 @@ etiquette:
 frames:
 	frame
 	| frames frame
-		{
-			if (!framecount--) {
-				framecount = skipframes;
-				printf ("%c\n%c", framedelims[1], framedelims[0]);
-			}
-			fdelim=' ';
-		}
 ;
 
 frame:
-	TOK_STX datasets TOK_ETX
-	| error TOK_ETX			{ pr_err("frame error\n"); yyerrok; }
+	TOK_STX datasets TOK_ETX	{ frame_sep(); }
+	| error TOK_ETX			{ frame_sep(); pr_err("frame error\n"); yyerrok; }
 ;
 
 datasets:
