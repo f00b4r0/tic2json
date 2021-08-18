@@ -54,6 +54,7 @@ enum {
 	OPT_DESCFORM	= 0x04,
 	OPT_DICTOUT	= 0x08,
 	OPT_LONGDATE	= 0x10,
+	OPT_PARSESTGE	= 0x20,
 };
 
 static const char * tic_units[] = {
@@ -90,11 +91,14 @@ static void make_field(struct tic_field *field, const struct tic_etiquette *etiq
 	free(data);
 }
 
+static void print_stge_data(int data);
+
 static void print_field(struct tic_field *field)
 {
 	const char fdictout[] = "%c \"%.8s\": { \"data\": ";
 	const char flistout[] = "%c{ \"label\": \"%.8s\", \"data\": ";
 	const char *format;
+	uint8_t type;
 
 	// filters
 	if (framecount ||
@@ -107,8 +111,14 @@ static void print_field(struct tic_field *field)
 	printf(format, fdelim, field->etiq.label);
 	switch (field->etiq.unittype & 0x0F) {
 		case U_SANS:
-			if ((field->etiq.unittype & 0xF0) == T_STRING) {
+			type = field->etiq.unittype & 0xF0;
+			if (T_STRING == type) {
 				printf("\"%s\"", field->data.s ? field->data.s : "");
+				break;
+			}
+			else if ((T_HEX == type) && (optflags & OPT_PARSESTGE)) {
+				// XXX abuse the fact that STGE is the only U_SANS|T_HEX field
+				print_stge_data(field->data.i);
 				break;
 			}
 			// fallthrough
@@ -346,11 +356,102 @@ etiquette_nodate:
 
 %%
 
+static void print_stge_data(int data)
+{
+	const char sep = (optflags & OPT_CRFIELD) ? '\n' : ' ';
+	uint32_t d = (uint32_t)data;
+
+
+	const char *const of[] = {
+		"fermé",
+		"ouvert",
+	};
+
+	const char *const coupure[] = {
+		"fermé",
+		"ouvert sur surpuissance",
+		"ouvert sur surtension",
+		"ouvert sur délestage",
+		"ouvert sur ordre CPL ou Euridis",
+		"ouvert sur une surchauffe avec une valeur de courant supérieure au courant de commutation maximal",
+		"ouvert sur une surchauffe avec une valeur de courant inférieure au courant de commutation maximal",
+		NULL,
+	};
+
+	const char *const euridis[] = {
+		"désactivée",
+		"activée sans sécurité",
+		NULL,
+		"activée avec sécurité",
+	};
+
+	const char *const cpl[] = {
+		"New/Unlock",
+		"New/Lock",
+		"Registered",
+		NULL,
+	};
+
+	const char *const tempo[] = {
+		"Pas d'annonce",
+		"Bleu",
+		"Blanc",
+		"Rouge",
+	};
+
+	const char *const pm[] = {
+		"pas",
+		"PM1",
+		"PM2",
+		"PM3",
+	};
+
+	printf("{ "
+		"\"Contact sec\": \"%s\",%c"
+		"\"Organe de coupure\": \"%s\",%c"
+		"\"État du cache-bornes distributeur\": \"%s\",%c"
+		"\"Surtension sur une des phases\": \"%ssurtension\",%c"
+		"\"Dépassement de la puissance de référence\": \"%s\",%c"
+		"\"Fonctionnement producteur/consommateur\": \"%s\",%c"
+		"\"Sens de l'énergie active\": \"énergie active %s\",%c"
+		"\"Tarif en cours sur le contrat fourniture\": \"énergie ventilée sur Index %d\",%c"
+		"\"Tarif en cours sur le contrat distributeur\": \"énergie ventilée sur Index %d\",%c"
+		"\"Mode dégradé de l'horloge\": \"horloge %s\",%c"
+		"\"État de la sortie télé-information\": \"mode %s\",%c"
+		"\"État de la sortie communication Euridis\": \"%s\",%c"
+		"\"Statut du CPL\": \"%s\",%c"
+		"\"Synchronisation CPL\": \"compteur%s synchronisé\",%c"
+		"\"Couleur du jour pour le contrat historique tempo\": \"%s\",%c"
+		"\"Couleur du lendemain pour le contrat historique tempo\": \"%s\",%c"
+		"\"Préavis pointes mobiles\": \"%s en cours\",%c"
+		"\"Pointe mobile\": \"%s en cours\" }%c"
+		,
+		of[d & 0x01], sep,
+		coupure[(d>>1) & 0x07], sep,
+		of[(d>>4) & 0x01], sep,
+		(d>>6) & 0x01 ? "" : "pas de ", sep,
+		(d>>7) & 0x01 ? "dépassement en cours" : "pas de dépassement", sep,
+		(d>>8) & 0x01 ? "producteur" : "consommateur", sep,
+		(d>>9) & 0x01 ? "négative" : "positive", sep,
+		((d>>10) & 0x0F) + 1, sep,
+		((d>>14) & 0x07) + 1, sep,
+		(d>>16) & 0x01 ? "en mode dégradée" : "correcte", sep,
+		(d>>17) & 0x01 ? "standard" : "historique", sep,
+		euridis[(d>>19) & 0x03], sep,
+		cpl[(d>>21) & 0x03], sep,
+		(d>>23) & 0x01 ? "" : " non", sep,
+		tempo[(d>>24) & 0x03], sep,
+		tempo[(d>>26) & 0x03], sep,
+		pm[(d>>28) & 0x03], sep,
+		pm[(d>>30) & 0x03], sep
+		);
+}
+
 #ifndef BAREBUILD
 static void usage(void)
 {
 	printf(	BINNAME " version " TIC2JSON_VER "\n"
-		"usage: " BINNAME " [-dhlnrz] [-e fichier] [-i id] [-s N]\n"
+		"usage: " BINNAME " [-dhlnruz] [-e fichier] [-i id] [-s N]\n"
 		" -d\t\t"	"Émet les trames sous forme de dictionaire plutôt que de liste\n"
 		" -e fichier\t"	"Utilise <fichier> pour configurer le filtre d'étiquettes\n"
 		" -h\t\t"	"Montre ce message d'aide\n"
@@ -359,6 +460,7 @@ static void usage(void)
 		" -n\t\t"	"Insère une nouvelle ligne après chaque groupe\n"
 		" -r\t\t"	"Interprète les horodates en format RFC3339\n"
 		" -s N\t\t"	"Émet une trame toutes les <N> reçues\n"
+		" -u\t\t"	"Décode le registre de statut sous forme de dictionnaire\n"
 		" -z\t\t"	"Masque les groupes numériques à zéro\n"
 		"\n"
 		"Note: le fichier de configuration du filtre d'étiquettes doit commencer par une ligne comportant\n"
@@ -406,7 +508,7 @@ int main(int argc, char **argv)
 	ferr = 0;
 
 #ifndef BAREBUILD
-	while ((ch = getopt(argc, argv, "de:hi:lnrs:z")) != -1) {
+	while ((ch = getopt(argc, argv, "de:hi:lnrs:uz")) != -1) {
 		switch (ch) {
 		case 'd':
 			optflags |= OPT_DICTOUT;
@@ -432,6 +534,9 @@ int main(int argc, char **argv)
 			break;
 		case 's':
 			skipframes = (unsigned int)strtol(optarg, NULL, 10);
+			break;
+		case 'u':
+			optflags |= OPT_PARSESTGE;
 			break;
 		case 'z':
 			optflags |= OPT_MASKZEROES;
