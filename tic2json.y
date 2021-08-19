@@ -12,12 +12,18 @@
  * - for dict mode, the keys are the label, followed by { "data": "xxx", "horodate": "xxx", "desc": "xxx", "unit": "xxx" }
  * with horodate optional, unit and data optional and possibly empty and data being either quoted string or number.
  *
- * Data errors can result in some/all fields being omitted in the output frame: the JSON root object is empty but still emitted.
+ * Data errors can result in some/all datasets being omitted in the output frame (e.g. invalid datasets or datasets
+ * that did not pass checksum are not emitted): the JSON root object can then be empty but is still emitted.
+ * In dictionary mode the parser will report the frame status as "_tvalide" ("trame valide") followed by either 1
+ * for a valid frame or 0 for a frame containing errors (including dataset errors).
+ *
  * Output JSON is guaranteed to always be valid for each frame. By default only frames are separated with newlines.
  * This parser implements a complete grammar that supports TIC version 02 as specified in Enedis-NOI-CPT_54E.pdf version 3.
  *
  * This parser does not allocate memory, except if a filter configuration is used in which case the etiq_en array will
  * be allocated (it's a few hundred bytes).
+ * A left-recursion grammar has been implemented to keep the memory usage to the bare minimum as well. As a tradeoff,
+ * valid datasets are always emitted regardless of the overall status of the containing frame.
  */
 
 %{
@@ -40,6 +46,7 @@ static char fdelim;
 static int optflags;
 static unsigned int skipframes, framecount;
 static uint8_t *etiq_en;	// type: < 255 tokens. This could be made a bit field if memory is a concern
+static char ferr;
 
 enum {
 	OPT_MASKZEROES	= 0x01,
@@ -162,9 +169,12 @@ void frame_sep(void)
 {
 	if (!framecount--) {
 		framecount = skipframes;
+		if (optflags & OPT_DICTOUT)
+			printf("%c \"_tvalide\": %d", fdelim, !ferr);
 		printf ("%c\n%c", framedelims[1], framedelims[0]);
 	}
 	fdelim=' ';
+	ferr=0;
 }
 
 %}
@@ -228,19 +238,19 @@ frames:
 
 frame:
 	TOK_STX datasets TOK_ETX	{ frame_sep(); }
-	| error TOK_ETX			{ frame_sep(); pr_err("frame error\n"); yyerrok; }
+	| error TOK_ETX			{ ferr=1; frame_sep(); pr_err("frame error\n"); yyerrok; }
 ;
 
 datasets:
-	error				{ pr_err("dataset error\n"); }
+	error				{ ferr=1; pr_err("dataset error\n"); }
 	| dataset
 	| datasets dataset
 ;
 
 dataset:
 	FIELD_START field FIELD_OK	{ print_field(&$2); free_field(&$2); }
-	| FIELD_START field FIELD_KO	{ pr_err("dataset invalid checksum\n"); free_field(&$2); }
-	| FIELD_START error FIELD_OK	{ pr_err("unrecognized dataset\n"); yyerrok; }
+	| FIELD_START field FIELD_KO	{ ferr=1; pr_err("dataset invalid checksum\n"); free_field(&$2); }
+	| FIELD_START error FIELD_OK	{ /*not a frame error*/ pr_err("unrecognized dataset\n"); yyerrok; }
 ;
 
 field: 	field_horodate
@@ -393,6 +403,7 @@ int main(int argc, char **argv)
 	skipframes = framecount = 0;
 	filter_mode = 0;
 	etiq_en = NULL;
+	ferr = 0;
 
 #ifndef BAREBUILD
 	while ((ch = getopt(argc, argv, "de:hi:lnrs:z")) != -1) {
