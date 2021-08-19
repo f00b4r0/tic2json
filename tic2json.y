@@ -36,7 +36,7 @@
 int yylex();
 int yylex_destroy();
 extern FILE *yyin;
-void yyerror(const char *);
+static void yyerror(const char *);
 
 int filter_mode;
 
@@ -67,7 +67,7 @@ static const char * tic_units[] = {
 	[U_W]		= "W",
 };
 
-void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char *horodate, char *data)
+static void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char *horodate, char *data)
 {
 	// args come from the bison stack
 	int base;
@@ -90,7 +90,7 @@ void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char 
 	free(data);
 }
 
-void print_field(struct tic_field *field)
+static void print_field(struct tic_field *field)
 {
 	const char fdictout[] = "%c \"%.8s\": { \"data\": ";
 	const char flistout[] = "%c{ \"label\": \"%.8s\", \"data\": ";
@@ -153,7 +153,7 @@ void print_field(struct tic_field *field)
 	fdelim = ',';
 }
 
-void free_field(struct tic_field *field)
+static void free_field(struct tic_field *field)
 {
 	free(field->horodate);
 	switch ((field->etiq.unittype & 0xF0)) {
@@ -165,7 +165,7 @@ void free_field(struct tic_field *field)
 	}
 }
 
-void frame_sep(void)
+static void frame_sep(void)
 {
 	if (!framecount--) {
 		framecount = skipframes;
@@ -347,7 +347,7 @@ etiquette_nodate:
 %%
 
 #ifndef BAREBUILD
-void usage(void)
+static void usage(void)
 {
 	printf(	BINNAME " version " TIC2JSON_VER "\n"
 		"usage: " BINNAME " [-dhlnrz] [-e fichier] [-i id] [-s N]\n"
@@ -368,7 +368,7 @@ void usage(void)
 		);
 }
 
-void parse_config(const char *filename)
+static void parse_config(const char *filename)
 {
 	if (!(yyin = fopen(filename, "r"))) {
 		perror(filename);
@@ -454,6 +454,6 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-void yyerror(const char * s)
+static void yyerror(const char * s)
 {
 }
