@@ -1,2 +1,6 @@
+1.1
+	* Report frame status in dict mode
+	* Add option to decode STGE field
+
 1.0
 	* Initial release
