@@ -9,6 +9,7 @@
 #ifndef tic2json_h
 #define tic2json_h
 
+#include <stdio.h>
 #include <inttypes.h>
 
 #ifdef BAREBUILD
@@ -53,5 +54,11 @@ struct tic_field {
 	} data;
 	char *horodate;
 };
+
+void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char *horodate, char *data);
+void print_field(struct tic_field *field);
+void free_field(struct tic_field *field);
+void frame_sep(void);
+void frame_err(void);
 
 #endif /* tic2json_h */
