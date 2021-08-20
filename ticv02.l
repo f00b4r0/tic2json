@@ -1,6 +1,6 @@
 /*
-//  tic2json.l
-//  A lexer for ENEDIS TIC protocol
+//  ticv02.l
+//  A lexer for ENEDIS TIC version 02 protocol
 //
 //  (C) 2021 Thibaut VARENE
 //  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
@@ -8,7 +8,8 @@
 
 /*
  * Complete lexer for ENEDIS' TIC protocol.
- * Currently only supports version 02, a.k.a "standard" as found on ENEDIS' LINKY smart meter.
+ * Supports version 02, a.k.a "standard" as found on ENEDIS' LINKY smart meter.
+ * Ref doc: https://www.enedis.fr/media/2035/download
  */
 
 /* noyywrap disables automatic rewinding for the next file to parse. Since we
@@ -42,7 +43,6 @@
 HORODATE	[ EeHh][0-9]{12}
 DATAC		[\x20-\x7e]
 CHKSUM		[\x20-\x5f]
-/* séparateur de champ. \x20 en mode historique: DATAC ne contient alors pas 0x20 */
 SEP		\x09
 
 %{
