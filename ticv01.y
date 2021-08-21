@@ -16,6 +16,14 @@
  * A left-recursion grammar has been implemented to keep the memory usage to the bare
  * minimum as well. As a tradeoff, valid datasets are always emitted regardless of the
  * overall status of the containing frame.
+ *
+ * Compteurs supportés:
+ *  - Linky (mode historique)
+ *  - Bleu monophasé (CBEMM / CBEMM ICC)
+ *  - Bleu triphasé (CBETM)
+ *  - Concentrateur de téléreport
+ *
+ * Pas de support des compteurs Jaune, Emeraude, PME-PMI ou Saphir.
  */
 
 %{
