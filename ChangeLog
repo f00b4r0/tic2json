@@ -1,3 +1,8 @@
+2.0
+	* Support TIC version 01 ("historique") for Linky, Bleu & CTR
+	* Purify parsers so they can be used for any output producer
+	* Support selective build of TIC version support
+
 1.1
 	* Report frame status in dict mode
 	* Add option to decode STGE field
