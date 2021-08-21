@@ -6,6 +6,12 @@
 //  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
 //
 
+/**
+ * @file
+ * Common routines used by the TIC parsers.
+ * The code making use of the parsers must provide extra functions as mentioned in the header.
+ */
+
 #include <stdlib.h>
 #include <string.h>
 
