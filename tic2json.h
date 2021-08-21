@@ -17,7 +17,7 @@
  #define pr_err(format, ...)    fprintf(stderr, format, ## __VA_ARGS__)
 #endif
 
-#define TIC2JSON_VER	"1.0"
+#define TIC2JSON_VER	"1.1"
 
 // The code assumes this fits on 4 bits
 enum tic_unit {
