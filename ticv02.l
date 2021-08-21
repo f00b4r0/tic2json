@@ -46,7 +46,7 @@ CHKSUM		[\x20-\x5f]
 SEP		\x09
 
 %{
-	#include "tic2json.h"
+	#include "tic.h"
 	#include "ticv02.tab.h"
 
 	extern bool filter_mode;

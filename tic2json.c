@@ -29,7 +29,7 @@
 #include <unistd.h>
 #include <err.h>
 
-#include "tic2json.h"
+#include "tic.h"
 #ifdef TICV01
  #include "ticv01.tab.h"
  int ticv01yylex_destroy();

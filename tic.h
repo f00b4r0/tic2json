@@ -1,13 +1,13 @@
 //
-//  tic2json.h
+//  tic.h
 //  
 //
 //  (C) 2021 Thibaut VARENE
 //  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
 //
 
-#ifndef tic2json_h
-#define tic2json_h
+#ifndef tic_h
+#define tic_h
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -63,4 +63,4 @@ void free_field(struct tic_field *field);
 void frame_sep(void);
 void frame_err(void);
 
-#endif /* tic2json_h */
+#endif /* tic_h */

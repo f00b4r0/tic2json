@@ -20,7 +20,7 @@
 
 %{
 #include <stdlib.h>
-#include "tic2json.h"
+#include "tic.h"
 
 int ticv02yylex();
 int ticv02yylex_destroy();
