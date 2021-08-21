@@ -200,7 +200,7 @@ etiquette_nodate:
 %%
 
 #ifndef BAREBUILD
-void parse_config(const char *filename)
+void parse_config_v02(const char *filename)
 {
 	if (!(ticv02yyin = fopen(filename, "r"))) {
 		perror(filename);

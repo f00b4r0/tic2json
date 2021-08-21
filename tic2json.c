@@ -300,7 +300,7 @@ static void usage(void)
 		);
 }
 
-void parse_config(const char *filename);
+void parse_config_v02(const char *filename);
 #endif /* !BAREBUILD */
 
 int main(int argc, char **argv)
@@ -322,7 +322,7 @@ int main(int argc, char **argv)
 			tp.framedelims[0] = '{'; tp.framedelims[1] = '}';
 			break;
 		case 'e':
-			parse_config(optarg);
+			parse_config_v02(optarg);
 			break;
 		case 'h':
 			usage();
