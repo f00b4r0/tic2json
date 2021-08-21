@@ -58,8 +58,8 @@ struct tic_field {
 void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char *horodate, char *data);
 void free_field(struct tic_field *field);
 
-void print_field(struct tic_field *field);
 // The following functions must be provided by the output interface
+void print_field(const struct tic_field *field);
 void frame_sep(void);
 void frame_err(void);
 

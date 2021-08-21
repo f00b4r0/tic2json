@@ -171,7 +171,7 @@ static void print_stge_data(int data)
 }
 #endif /* TICV02 */
 
-void print_field(struct tic_field *field)
+void print_field(const struct tic_field *field)
 {
 	const char fdictout[] = "%c \"%.8s\": { \"data\": ";
 	const char flistout[] = "%c{ \"label\": \"%.8s\", \"data\": ";
