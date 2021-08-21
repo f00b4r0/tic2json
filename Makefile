@@ -20,7 +20,7 @@ all:	$(MAIN)
 
 tic2json.o: $(addsuffix .tab.h,$(TICS))
 
-$(MAIN):  $(addsuffix .tab.o,$(TICS)) $(addsuffix .lex.o,$(TICS)) tic2json.o
+$(MAIN):  $(addsuffix .tab.o,$(TICS)) $(addsuffix .lex.o,$(TICS)) tic.o tic2json.o
 
 clean:
 	$(RM) $(MAIN) *.output *.tab.h *.tab.c *.lex.c *.o

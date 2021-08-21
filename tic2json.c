@@ -43,8 +43,10 @@
  #warning BAREBUILD currently requires editing the code by hand
 #endif
 
-bool filter_mode;
-uint8_t *etiq_en;	// type: < 255 tokens. This could be made a bit field if memory is a concern
+#define TIC2JSON_VER	"1.1"
+
+extern bool filter_mode;
+extern uint8_t *etiq_en;
 
 static struct {
 	const char *idtag;
@@ -75,29 +77,6 @@ static const char * tic_units[] = {
 	[U_W]		= "W",
 	[U_MIN]		= "mn",
 };
-
-void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char *horodate, char *data)
-{
-	// args come from the bison stack
-	int base;
-
-	field->horodate = horodate;
-	memcpy(&field->etiq, etiq, sizeof(field->etiq));
-
-	switch ((etiq->unittype & 0xF0)) {
-		case T_STRING:
-			field->data.s = data;
-			return;
-		case T_HEX:
-			base = 16;
-			break;
-		default:
-			base = 10;
-			break;
-	}
-	field->data.i = (int)strtol(data, NULL, base);
-	free(data);
-}
 
 #ifdef TICV02
 static void print_stge_data(int data)
@@ -264,18 +243,6 @@ void print_field(struct tic_field *field)
 		putchar('\n');
 
 	tp.fdelim = ',';
-}
-
-void free_field(struct tic_field *field)
-{
-	free(field->horodate);
-	switch ((field->etiq.unittype & 0xF0)) {
-		case T_STRING:
-			free(field->data.s);
-			break;
-		default:
-			break;
-	}
 }
 
 void frame_sep(void)

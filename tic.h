@@ -1,6 +1,6 @@
 //
 //  tic.h
-//  
+//  Interface for TIC parsers
 //
 //  (C) 2021 Thibaut VARENE
 //  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
@@ -18,8 +18,6 @@
 #else
  #define pr_err(format, ...)    fprintf(stderr, "ERREUR: " format, ## __VA_ARGS__)
 #endif
-
-#define TIC2JSON_VER	"1.1"
 
 // The code assumes this fits on 4 bits
 enum tic_unit {
@@ -58,8 +56,10 @@ struct tic_field {
 };
 
 void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char *horodate, char *data);
-void print_field(struct tic_field *field);
 void free_field(struct tic_field *field);
+
+void print_field(struct tic_field *field);
+// The following functions must be provided by the output interface
 void frame_sep(void);
 void frame_err(void);
 
