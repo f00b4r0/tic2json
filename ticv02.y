@@ -75,12 +75,12 @@ filter:
 etiquettes:
 	etiquette		{ etiq_en[$1.tok]=1; }
 	| etiquettes etiquette	{ etiq_en[$2.tok]=1; }
+	| error			{ YYABORT; }
 ;
 
 etiquette:
 	etiquette_horodate
 	| etiquette_nodate
-	| error			{ YYABORT; }
 ;
 
 /* stream processing */
