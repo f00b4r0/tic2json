@@ -39,6 +39,10 @@
  int ticv02yylex_destroy();
 #endif
 
+#ifdef BAREBUILD
+ #warning BAREBUILD currently requires editing the code by hand
+#endif
+
 bool filter_mode;
 uint8_t *etiq_en;	// type: < 255 tokens. This could be made a bit field if memory is a concern
 
@@ -229,18 +233,18 @@ void print_field(struct tic_field *field)
 		if (tp.optflags & OPT_LONGDATE) {
 			const char *o, *d = field->horodate;
 			switch (d[0]) {
-			default:
-			case ' ':
-				o = "";
-				break;
-			case 'E':
-			case 'e':
-				o = "+02:00";
-				break;
-			case 'H':
-			case 'h':
-				o = "+01:00";
-				break;
+				default:
+				case ' ':
+					o = "";
+					break;
+				case 'E':
+				case 'e':
+					o = "+02:00";
+					break;
+				case 'H':
+				case 'h':
+					o = "+01:00";
+					break;
 			}
 			printf(", \"horodate\": \"20%.2s-%.2s-%.2sT%.2s:%.2s:%.2s%s\"", d+1, d+3, d+5, d+7, d+9, d+11, o);
 		}
@@ -343,8 +347,8 @@ int main(int argc, char **argv)
 
 	filter_mode = false;
 	etiq_en = NULL;
-	memset(&tp, 0, sizeof(tp));
 
+	memset(&tp, 0, sizeof(tp));
 	tp.framedelims[0] = '['; tp.framedelims[1] = ']';
 	tp.fdelim = ' ';
 

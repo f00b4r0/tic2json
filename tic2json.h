@@ -16,7 +16,7 @@
 #ifdef BAREBUILD
  #define pr_err(format, ...)    /* nothing */
 #else
- #define pr_err(format, ...)    fprintf(stderr, format, ## __VA_ARGS__)
+ #define pr_err(format, ...)    fprintf(stderr, "ERREUR: " format, ## __VA_ARGS__)
 #endif
 
 #define TIC2JSON_VER	"1.1"
