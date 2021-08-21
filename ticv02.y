@@ -22,9 +22,9 @@
 #include <stdlib.h>
 #include "tic2json.h"
 
-int yylex();
-int yylex_destroy();
-extern FILE *yyin;
+int ticv02yylex();
+int ticv02yylex_destroy();
+extern FILE *ticv02yyin;
 static void yyerror(const char *);
 
 extern int filter_mode;
@@ -202,7 +202,7 @@ etiquette_nodate:
 #ifndef BAREBUILD
 void parse_config(const char *filename)
 {
-	if (!(yyin = fopen(filename, "r"))) {
+	if (!(ticv02yyin = fopen(filename, "r"))) {
 		perror(filename);
 		exit(-1);
 	}
@@ -212,14 +212,14 @@ void parse_config(const char *filename)
 		abort();	// OOM
 
 	filter_mode = 1;
-	if (yyparse()) {
+	if (ticv02yyparse()) {
 		pr_err("%s: filter config error!\n", filename);
 		exit(-1);
 	}
 
-	fclose(yyin);
-	yylex_destroy();
-	yyin = stdin;
+	fclose(ticv02yyin);
+	ticv02yylex_destroy();
+	ticv02yyin = stdin;
 	filter_mode = 0;
 }
 #endif /* !BAREBUILD */

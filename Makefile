@@ -2,10 +2,10 @@ all:	tic2json
 
 %.lex.c: %.l %.tab.h
 # The ideal size for the flex buffer is the length of the longest token expected, in bytes, plus a little more.
-	flex -DYY_BUF_SIZE=128 -o$@ $<
+	flex -DYY_BUF_SIZE=128 -P$*yy -o$@ $<
 
 %.tab.h %.tab.c: %.y
-	bison -Wno-other -d $<
+	bison -Wno-other -p $*yy -d $<
 
 tic2json:	%: ticv02.tab.c ticv02.lex.c %.c
 	$(CC) -DBINNAME='"$@"' -Os -Wall $^ -o $@

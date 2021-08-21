@@ -61,7 +61,7 @@ static const char * tic_units[] = {
 	[U_W]		= "W",
 };
 
-int yylex_destroy();
+int ticv02yylex_destroy();
 
 void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char *horodate, char *data)
 {
@@ -357,9 +357,9 @@ int main(int argc, char **argv)
 #endif /* !BAREBUILD */
 
 	putchar(tp.framedelims[0]);
-	yyparse();
+	ticv02yyparse();
 	printf("%c\n", tp.framedelims[1]);
-	yylex_destroy();
+	ticv02yylex_destroy();
 
 	free(etiq_en);
 	return 0;
