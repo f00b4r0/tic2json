@@ -59,6 +59,7 @@ static const char * tic_units[] = {
 	[U_KVA]		= "kVA",
 	[U_VA]		= "VA",
 	[U_W]		= "W",
+	[U_MIN]		= "mn",
 };
 
 int ticv02yylex_destroy();

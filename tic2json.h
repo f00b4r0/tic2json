@@ -30,6 +30,7 @@ enum tic_unit {
 	U_KVA,
 	U_VA,
 	U_W,
+	U_MIN,
 };
 
 // this is to be packed in the upper 4 bits of a byte: must increment by 0x10
