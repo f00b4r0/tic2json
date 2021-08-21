@@ -27,7 +27,7 @@
 #include <unistd.h>
 
 #include "tic2json.h"
-#include "tic2json.tab.h"
+#include "ticv02.tab.h"
 
 int filter_mode;
 uint8_t *etiq_en;	// type: < 255 tokens. This could be made a bit field if memory is a concern

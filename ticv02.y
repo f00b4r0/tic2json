@@ -1,5 +1,5 @@
 //
-//  tic2json.y
+//  ticv02.y
 //  A parser for ENEDIS TIC version 02 protocol
 //
 //  (C) 2021 Thibaut VARENE

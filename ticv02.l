@@ -47,7 +47,7 @@ SEP		\x09
 
 %{
 	#include "tic2json.h"
-	#include "tic2json.tab.h"
+	#include "ticv02.tab.h"
 
 	extern int filter_mode;
 	static uint8_t checksum;
