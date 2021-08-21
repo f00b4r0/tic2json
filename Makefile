@@ -1,4 +1,15 @@
-all:	tic2json
+MAIN := tic2json
+CFLAGS := -Wall -Os
+TICVERSIONS := 01 02
+
+# don't touch below this line
+
+TICS := $(addprefix ticv,$(TICVERSIONS))
+TICSDEFS := $(addprefix -DTICV,$(TICVERSIONS))
+
+CFLAGS += $(TICSDEFS) -DBINNAME='"$(MAIN)"'
+
+all:	$(MAIN)
 
 %.lex.c: %.l %.tab.h
 # The ideal size for the flex buffer is the length of the longest token expected, in bytes, plus a little more.
@@ -7,13 +18,9 @@ all:	tic2json
 %.tab.h %.tab.c: %.y
 	bison -Wno-other -p $*yy -d $<
 
-tic2json:	%: ticv02.tab.c ticv02.lex.c %.c
-	$(CC) -DBINNAME='"$@"' -Os -Wall $^ -o $@
+tic2json.o: $(addsuffix .tab.h,$(TICS))
+
+$(MAIN):  $(addsuffix .tab.o,$(TICS)) $(addsuffix .lex.o,$(TICS)) tic2json.o
 
 clean:
-	$(RM) tic2json *.output *.tab.h *.tab.c *.lex.c
-
-# disable implicit rules we don't want
-%.c: %.y
-%.c: %.l
-
+	$(RM) $(MAIN) *.output *.tab.h *.tab.c *.lex.c *.o
