@@ -19,15 +19,26 @@
  * for a valid frame or 0 for a frame containing errors (including dataset errors).
  *
  * Output JSON is guaranteed to always be valid for each frame. By default only frames are separated with newlines.
+ *
+ * @note: the program can only parse a single version of the TIC within one execution context.
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
+#include <err.h>
 
 #include "tic2json.h"
-#include "ticv02.tab.h"
+#ifdef TICV01
+ #include "ticv01.tab.h"
+ int ticv01yylex_destroy();
+#endif
+#ifdef TICV02
+ #include "ticv02.tab.h"
+ int ticv02yylex_destroy();
+#endif
 
 int filter_mode;
 uint8_t *etiq_en;	// type: < 255 tokens. This could be made a bit field if memory is a concern
@@ -62,8 +73,6 @@ static const char * tic_units[] = {
 	[U_MIN]		= "mn",
 };
 
-int ticv02yylex_destroy();
-
 void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char *horodate, char *data)
 {
 	// args come from the bison stack
@@ -87,6 +96,7 @@ void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char 
 	free(data);
 }
 
+#ifdef TICV02
 static void print_stge_data(int data)
 {
 	const char sep = (tp.optflags & OPT_CRFIELD) ? '\n' : ' ';
@@ -177,6 +187,7 @@ static void print_stge_data(int data)
 		pm[(d>>30) & 0x03], sep
 		);
 }
+#endif /* TICV02 */
 
 void print_field(struct tic_field *field)
 {
@@ -201,17 +212,20 @@ void print_field(struct tic_field *field)
 				printf("\"%s\"", field->data.s ? field->data.s : "");
 				break;
 			}
+#ifdef TICV02
 			else if ((T_HEX == type) && (tp.optflags & OPT_PARSESTGE)) {
 				// XXX abuse the fact that STGE is the only U_SANS|T_HEX field
 				print_stge_data(field->data.i);
 				break;
 			}
+#endif /* TICV02 */
 			// fallthrough
 		default:
 			printf("%d", field->data.i);
 			break;
 	}
 
+#ifdef TICV02
 	if (field->horodate) {
 		if (tp.optflags & OPT_LONGDATE) {
 			const char *o, *d = field->horodate;
@@ -234,6 +248,7 @@ void print_field(struct tic_field *field)
 		else
 			printf(", \"horodate\": \"%s\"", field->horodate);
 	}
+#endif /* TICV02 */
 
 	if (tp.optflags & OPT_DESCFORM)
 		printf(", \"desc\": \"%s\", \"unit\": \"%s\"", field->etiq.desc, tic_units[(field->etiq.unittype & 0x0F)]);
@@ -281,7 +296,14 @@ void frame_err(void)
 static void usage(void)
 {
 	printf(	BINNAME " version " TIC2JSON_VER "\n"
-		"usage: " BINNAME " [-dhlnruz] [-e fichier] [-i id] [-s N]\n"
+		"usage: " BINNAME " -1|-2 [-dhlnruz] [-e fichier] [-i id] [-s N]\n"	// FIXME -1|-2 always shown
+#ifdef TICV01
+	        " -1\t\t"	"Analyse les trames TIC version 01 \"historique\"\n"
+#endif
+#ifdef TICV02
+	        " -2\t\t"	"Analyse les trames TIC version 02 \"standard\"\n"
+#endif
+		"\n"
 		" -d\t\t"	"Émet les trames sous forme de dictionaire plutôt que de liste\n"
 		" -e fichier\t"	"Utilise <fichier> pour configurer le filtre d'étiquettes\n"
 		" -h\t\t"	"Montre ce message d'aide\n"
@@ -300,12 +322,25 @@ static void usage(void)
 		);
 }
 
+#ifdef TICV01
+void parse_config_v01(const char *filename);
+#endif
+
+#ifdef TICV02
 void parse_config_v02(const char *filename);
+#endif
+
 #endif /* !BAREBUILD */
 
 int main(int argc, char **argv)
 {
+	void (*parse_config)(const char *);
+	int (*yyparse)(void) = NULL;
+	int (*yylex_destroy)(void) = NULL;
+
 	int ch;
+	bool ticset = false;
+	const char *fconfig = NULL;
 
 	filter_mode = 0;
 	etiq_en = NULL;
@@ -315,14 +350,34 @@ int main(int argc, char **argv)
 	tp.fdelim = ' ';
 
 #ifndef BAREBUILD
-	while ((ch = getopt(argc, argv, "de:hi:lnrs:uz")) != -1) {
+	while ((ch = getopt(argc, argv, "12de:hi:lnrs:uz")) != -1) {
 		switch (ch) {
+#ifdef TICV01
+		case '1':
+			if (ticset)
+				errx(-1, "ERREUR: Une seule version de TIC peut être analysée à la fois");
+			parse_config = parse_config_v01;
+			yyparse = ticv01yyparse;
+			yylex_destroy = ticv01yylex_destroy;
+			ticset = true;
+			break;
+#endif
+#ifdef TICV02
+		case '2':
+			if (ticset)
+				errx(-1, "ERREUR: Une seule version de TIC peut être analysée à la fois");
+			parse_config = parse_config_v02;
+			yyparse = ticv02yyparse;
+			yylex_destroy = ticv02yylex_destroy;
+			ticset = true;
+			break;
+#endif
 		case 'd':
 			tp.optflags |= OPT_DICTOUT;
 			tp.framedelims[0] = '{'; tp.framedelims[1] = '}';
 			break;
 		case 'e':
-			parse_config_v02(optarg);
+			fconfig = optarg;
 			break;
 		case 'h':
 			usage();
@@ -357,10 +412,16 @@ int main(int argc, char **argv)
 	argv += optind;
 #endif /* !BAREBUILD */
 
+	if (!ticset)
+		errx(-1, "ERREUR: version TIC non spécifiée");
+
+	if (fconfig)
+		parse_config(fconfig);
+
 	putchar(tp.framedelims[0]);
-	ticv02yyparse();
+	yyparse();
 	printf("%c\n", tp.framedelims[1]);
-	ticv02yylex_destroy();
+	yylex_destroy();
 
 	free(etiq_en);
 	return 0;
