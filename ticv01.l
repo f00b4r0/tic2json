@@ -132,6 +132,8 @@ PPOT		{ crc_calc(); ticv01yylval.label = "PPOT"; return ET_PPOT; }
 ADIR1		{ crc_calc(); ticv01yylval.label = "ADIR1"; return ET_ADIR1; }
 ADIR2		{ crc_calc(); ticv01yylval.label = "ADIR2"; return ET_ADIR2; }
 ADIR3		{ crc_calc(); ticv01yylval.label = "ADIR3"; return ET_ADIR3; }
+GAZ		{ crc_calc(); ticv01yylval.label = "GAZ"; return ET_GAZ; }
+AUTRE		{ crc_calc(); ticv01yylval.label = "AUTRE"; return ET_AUTRE; }
 
 
 <INITIAL>{DATAC}+	{ crc_calc(); ticv01yylval.text = strdup(yytext); return TOK_DATA; }

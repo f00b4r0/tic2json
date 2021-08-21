@@ -51,6 +51,7 @@ extern uint8_t *etiq_en;
 %token <label> ET_BBRHCJB ET_BBRHPJB ET_BBRHCJW ET_BBRHPJW ET_BBRHCJR ET_BBRHPJR
 %token <label> ET_PEJP ET_PTEC ET_DEMAIN ET_IINST ET_IINST1 ET_IINST2 ET_IINST3 ET_ADPS ET_IMAX ET_IMAX1 ET_IMAX2 ET_IMAX3
 %token <label> ET_PMAX ET_PAPP ET_HHPHC ET_MOTDETAT ET_PPOT ET_ADIR1 ET_ADIR2 ET_ADIR3
+%token <label> ET_GAZ ET_AUTRE
 
 %type <etiq> etiquette
 %type <field> field
@@ -137,6 +138,8 @@ etiquette:
 	| ET_ADIR1	{ $$.tok=yytranslate[ET_ADIR1]; $$.unittype=U_A; $$.label=$1; $$.desc="Avertissemetn de Dépassement d'intensité de réglage phase 1"; }
 	| ET_ADIR2	{ $$.tok=yytranslate[ET_ADIR2]; $$.unittype=U_A; $$.label=$1; $$.desc="Avertissemetn de Dépassement d'intensité de réglage phase 2"; }
 	| ET_ADIR3	{ $$.tok=yytranslate[ET_ADIR3]; $$.unittype=U_A; $$.label=$1; $$.desc="Avertissemetn de Dépassement d'intensité de réglage phase 3"; }
+	| ET_GAZ	{ $$.tok=yytranslate[ET_GAZ]; $$.unittype=U_DAL; $$.label=$1; $$.desc="Index gaz"; }
+	| ET_AUTRE	{ $$.tok=yytranslate[ET_AUTRE]; $$.unittype=U_DAL; $$.label=$1; $$.desc="Index du troisième compteur"; }
 ;
 
 %%

@@ -42,6 +42,7 @@ enum tic_unit {
 	U_VA,
 	U_W,
 	U_MIN,
+	U_DAL,
 };
 
 /**

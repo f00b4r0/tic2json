@@ -76,6 +76,7 @@ static const char * tic_units[] = {
 	[U_VA]		= "VA",
 	[U_W]		= "W",
 	[U_MIN]		= "mn",
+	[U_DAL]		= "daL",
 };
 
 #ifdef TICV02
