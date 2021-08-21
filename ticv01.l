@@ -64,7 +64,7 @@ SEP		\x20
 	#include "tic2json.h"
 	#include "ticv01.tab.h"
 
-	extern int filter_mode;
+	extern bool filter_mode;
 	static uint8_t checksum;
 
 	static void crc_calc(void)

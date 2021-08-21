@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <inttypes.h>
+#include <stdbool.h>
 
 #ifdef BAREBUILD
  #define pr_err(format, ...)    /* nothing */

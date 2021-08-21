@@ -27,7 +27,7 @@ int ticv01yylex_destroy();
 extern FILE *ticv01yyin;
 static void yyerror(const char *);
 
-extern int filter_mode;
+extern bool filter_mode;
 extern uint8_t *etiq_en;
 
 %}
@@ -153,7 +153,7 @@ void parse_config_v01(const char *filename)
 	if (!etiq_en)
 		abort();	// OOM
 
-	filter_mode = 1;
+	filter_mode = true;
 	if (ticv01yyparse()) {
 		pr_err("%s: filter config error!\n", filename);
 		exit(-1);
@@ -162,7 +162,7 @@ void parse_config_v01(const char *filename)
 	fclose(ticv01yyin);
 	ticv01yylex_destroy();
 	ticv01yyin = stdin;
-	filter_mode = 0;
+	filter_mode = false;
 }
 #endif /* !BAREBUILD */
 

@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdbool.h>
 #include <err.h>
 
 #include "tic2json.h"
@@ -40,7 +39,7 @@
  int ticv02yylex_destroy();
 #endif
 
-int filter_mode;
+bool filter_mode;
 uint8_t *etiq_en;	// type: < 255 tokens. This could be made a bit field if memory is a concern
 
 static struct {
@@ -342,7 +341,7 @@ int main(int argc, char **argv)
 	bool ticset = false;
 	const char *fconfig = NULL;
 
-	filter_mode = 0;
+	filter_mode = false;
 	etiq_en = NULL;
 	memset(&tp, 0, sizeof(tp));
 
