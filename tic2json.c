@@ -309,9 +309,8 @@ int main(int argc, char **argv)
 	int (*yyparse)(void) = NULL;
 	int (*yylex_destroy)(void) = NULL;
 
-	int ch;
-	bool ticset = false;
 	const char *fconfig = NULL;
+	int ch;
 
 	filter_mode = false;
 	etiq_en = NULL;
@@ -325,22 +324,20 @@ int main(int argc, char **argv)
 		switch (ch) {
 #ifdef TICV01
 		case '1':
-			if (ticset)
+			if (yyparse)
 				errx(-1, "ERREUR: Une seule version de TIC peut être analysée à la fois");
 			parse_config = parse_config_v01;
 			yyparse = ticv01yyparse;
 			yylex_destroy = ticv01yylex_destroy;
-			ticset = true;
 			break;
 #endif
 #ifdef TICV02
 		case '2':
-			if (ticset)
+			if (yyparse)
 				errx(-1, "ERREUR: Une seule version de TIC peut être analysée à la fois");
 			parse_config = parse_config_v02;
 			yyparse = ticv02yyparse;
 			yylex_destroy = ticv02yylex_destroy;
-			ticset = true;
 			break;
 #endif
 		case 'd':
@@ -383,7 +380,7 @@ int main(int argc, char **argv)
 	argv += optind;
 #endif /* !BAREBUILD */
 
-	if (!ticset)
+	if (!yyparse)
 		errx(-1, "ERREUR: version TIC non spécifiée");
 
 	if (fconfig)
