@@ -143,9 +143,9 @@ etiquette:
 	| ET_HHPHC	{ $$.tok=yytranslate[ET_HHPHC]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Horaire Heures Pleines Heures Creuses"; }
 	| ET_MOTDETAT	{ $$.tok=yytranslate[ET_MOTDETAT]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Mot d'état du compteur"; }
 	| ET_PPOT	{ $$.tok=yytranslate[ET_PPOT]; $$.unittype=U_SANS; $$.label=$1; $$.desc="Présence des potentiels"; }
-	| ET_ADIR1	{ $$.tok=yytranslate[ET_ADIR1]; $$.unittype=U_A; $$.label=$1; $$.desc="Avertissemetn de Dépassement d'intensité de réglage phase 1"; }
-	| ET_ADIR2	{ $$.tok=yytranslate[ET_ADIR2]; $$.unittype=U_A; $$.label=$1; $$.desc="Avertissemetn de Dépassement d'intensité de réglage phase 2"; }
-	| ET_ADIR3	{ $$.tok=yytranslate[ET_ADIR3]; $$.unittype=U_A; $$.label=$1; $$.desc="Avertissemetn de Dépassement d'intensité de réglage phase 3"; }
+	| ET_ADIR1	{ $$.tok=yytranslate[ET_ADIR1]; $$.unittype=U_A; $$.label=$1; $$.desc="Avertissement de Dépassement d'intensité de réglage phase 1"; }
+	| ET_ADIR2	{ $$.tok=yytranslate[ET_ADIR2]; $$.unittype=U_A; $$.label=$1; $$.desc="Avertissement de Dépassement d'intensité de réglage phase 2"; }
+	| ET_ADIR3	{ $$.tok=yytranslate[ET_ADIR3]; $$.unittype=U_A; $$.label=$1; $$.desc="Avertissement de Dépassement d'intensité de réglage phase 3"; }
 	| ET_GAZ	{ $$.tok=yytranslate[ET_GAZ]; $$.unittype=U_DAL; $$.label=$1; $$.desc="Index gaz"; }
 	| ET_AUTRE	{ $$.tok=yytranslate[ET_AUTRE]; $$.unittype=U_DAL; $$.label=$1; $$.desc="Index du troisième compteur"; }
 ;
