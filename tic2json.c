@@ -267,7 +267,7 @@ void frame_err(void)
 static void usage(void)
 {
 	printf(	BINNAME " version " TIC2JSON_VER "\n"
-		"usage: " BINNAME " -1|-2 [-dhlnruz] [-e fichier] [-i id] [-s N]\n"	// FIXME -1|-2 always shown
+		"usage: " BINNAME " {-1|-2} [-dhlnruz] [-e fichier] [-i id] [-s N]\n"	// FIXME -1|-2 always shown
 #ifdef TICV01
 	        " -1\t\t"	"Analyse les trames TIC version 01 \"historique\"\n"
 #endif
