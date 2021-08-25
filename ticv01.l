@@ -55,6 +55,7 @@
 %option nodebug
 
 %s FILTER
+%x DATA
 
 DATAC		[\x21-\x7e]
 CHKSUM		[\x20-\x5f]
@@ -84,12 +85,12 @@ SEP		\x20
 <FILTER>[ \t\n]+                /* ignore whitespace */
 
 	/* balises */
-<INITIAL>\x02		{ return TOK_STX; }
-<INITIAL>\x03		{ return TOK_ETX; }
-<INITIAL>\x04		{ return TOK_EOT; }
-<INITIAL>\x0a		{ checksum=0; return FIELD_START; }
-<INITIAL>{SEP}		{ checksum += (uint8_t)*yytext; return TOK_SEP; }
-<INITIAL>{CHKSUM}\x0d	{
+<*>\x02		{ BEGIN(INITIAL); return TOK_STX; }
+<*>\x03		{ BEGIN(INITIAL); return TOK_ETX; }
+<*>\x04		{ BEGIN(INITIAL); return TOK_EOT; }
+<*>\x0a		{ BEGIN(INITIAL); checksum=0; return FIELD_START; }
+<*>{SEP}	{ checksum += (uint8_t)*yytext; BEGIN(DATA); return TOK_SEP; }
+<*>{CHKSUM}\x0d	{
 			checksum -= 0x20;	// we have one space too many in the checksum: last SEP
 			checksum = (checksum & 0x3f) + 0x20;
 			if (checksum == (uint8_t)yytext[0]) return FIELD_OK;
@@ -136,9 +137,9 @@ GAZ		{ crc_calc(); ticv01yylval.label = "GAZ"; return ET_GAZ; }
 AUTRE		{ crc_calc(); ticv01yylval.label = "AUTRE"; return ET_AUTRE; }
 
 
-<INITIAL>{DATAC}+	{ crc_calc(); ticv01yylval.text = strdup(yytext); return TOK_DATA; }
+<DATA>{DATAC}+	{ crc_calc(); ticv01yylval.text = strdup(yytext); return TOK_DATA; }
 
-.		{ pr_err("spurious character 0x%02hhx\n", *yytext); return *yytext; }
+<*>.		{ pr_err("spurious character 0x%02hhx\n", *yytext); return *yytext; }
 
 <<EOF>>		{ yyterminate(); }
 %%
