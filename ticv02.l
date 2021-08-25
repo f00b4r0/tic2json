@@ -39,6 +39,7 @@
 %option nodebug
 
 %s FILTER
+%x DATA
 
 HORODATE	[ EeHh][0-9]{12}
 DATAC		[\x20-\x7e]
@@ -69,11 +70,11 @@ SEP		\x09
 <FILTER>[ \t\n]+                /* ignore whitespace */
 
 	/* balises */
-<INITIAL>\x02		{ return TOK_STX; }
-<INITIAL>\x03		{ return TOK_ETX; }
-<INITIAL>\x0a		{ checksum=0; return FIELD_START; }
-<INITIAL>{SEP}		{ checksum += (uint8_t)*yytext; return TOK_SEP; }
-<INITIAL>{CHKSUM}\x0d	{
+<*>\x02		{ BEGIN(INITIAL); return TOK_STX; }
+<*>\x03		{ BEGIN(INITIAL); return TOK_ETX; }
+<*>\x0a		{ BEGIN(INITIAL); checksum=0; return FIELD_START; }
+<*>{SEP}	{ checksum += (uint8_t)*yytext; BEGIN(DATA); return TOK_SEP; }
+<*>{CHKSUM}\x0d	{
 			checksum = (checksum & 0x3f) + 0x20;
 			if (checksum == (uint8_t)yytext[0]) return FIELD_OK;
 			else return FIELD_KO;
@@ -153,10 +154,10 @@ NJOURF\+1	{ crc_calc(); ticv02yylval.label = "NJOURF+1"; return ET_NJOURFP1; }
 PJOURF\+1	{ crc_calc(); ticv02yylval.label = "PJOURF+1"; return ET_PJOURFP1; }
 PPOINTE		{ crc_calc(); ticv02yylval.label = "PPOINTE"; return ET_PPOINTE; }
 
-<INITIAL>{HORODATE}	{ crc_calc(); ticv02yylval.text = strdup(yytext); return TOK_HDATE; }
-<INITIAL>{DATAC}+	{ crc_calc(); ticv02yylval.text = strdup(yytext); return TOK_DATA; }
+<DATA>{HORODATE}	{ crc_calc(); ticv02yylval.text = strdup(yytext); return TOK_HDATE; }
+<DATA>{DATAC}+	{ crc_calc(); ticv02yylval.text = strdup(yytext); return TOK_DATA; }
 
-.		{ pr_err("spurious character 0x%02hhx\n", *yytext); return *yytext; }
+<*>.		{ pr_err("spurious character 0x%02hhx\n", *yytext); return *yytext; }
 
 <<EOF>>		{ yyterminate(); }
 %%
