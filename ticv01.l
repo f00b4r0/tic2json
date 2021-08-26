@@ -139,7 +139,7 @@ AUTRE		{ crc_calc(); ticv01yylval.label = "AUTRE"; return ET_AUTRE; }
 
 <DATA>{DATAC}+	{ crc_calc(); ticv01yylval.text = strdup(yytext); return TOK_DATA; }
 
-<*>.		{ pr_err("spurious character 0x%02hhx\n", *yytext); return *yytext; }
+<*>.		{ if (yy_flex_debug) pr_err("spurious character 0x%02hhx\n", *yytext); return *yytext; }
 
 <<EOF>>		{ yyterminate(); }
 %%
