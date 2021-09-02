@@ -27,7 +27,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <err.h>
+#ifndef BAREBUILD
+ #include <err.h>
+#endif
 
 #include "tic.h"
 #ifdef TICV01
@@ -40,7 +42,7 @@
 #endif
 
 #ifdef BAREBUILD
- #warning BAREBUILD currently requires editing the code by hand
+ #warning BAREBUILD currently requires defining only one version of supported TIC and does not provide main()
 #endif
 
 #define TIC2JSON_VER	"2.0"
@@ -263,6 +265,16 @@ void frame_err(void)
 	tp.ferr = 1;
 }
 
+static inline void ticinit(void)
+{
+	filter_mode = false;
+	etiq_en = NULL;
+
+	memset(&tp, 0, sizeof(tp));
+	tp.framedelims[0] = '['; tp.framedelims[1] = ']';
+	tp.fdelim = ' ';
+}
+
 #ifndef BAREBUILD
 static void usage(void)
 {
@@ -301,8 +313,6 @@ void parse_config_v01(const char *filename);
 void parse_config_v02(const char *filename);
 #endif
 
-#endif /* !BAREBUILD */
-
 int main(int argc, char **argv)
 {
 	void (*parse_config)(const char *);
@@ -312,14 +322,8 @@ int main(int argc, char **argv)
 	const char *fconfig = NULL;
 	int ch;
 
-	filter_mode = false;
-	etiq_en = NULL;
+	ticinit();
 
-	memset(&tp, 0, sizeof(tp));
-	tp.framedelims[0] = '['; tp.framedelims[1] = ']';
-	tp.fdelim = ' ';
-
-#ifndef BAREBUILD
 	while ((ch = getopt(argc, argv, "12de:hi:lnrs:uz")) != -1) {
 		switch (ch) {
 #ifdef TICV01
@@ -378,7 +382,6 @@ int main(int argc, char **argv)
 	}
 	argc -= optind;
 	argv += optind;
-#endif /* !BAREBUILD */
 
 	if (!yyparse)
 		errx(-1, "ERREUR: version TIC non spécifiée");
@@ -394,3 +397,25 @@ int main(int argc, char **argv)
 	free(etiq_en);
 	return 0;
 }
+
+#else /* BAREBUILD */
+
+void ticmain(void)
+{
+	ticinit();
+	putchar(tp.framedelims[0]);
+
+#if defined(TICV01)
+	ticv01yyparse();
+	ticv01yylex_destroy();
+#elif defined(TICV02)
+	ticv02yyparse();
+	ticv02yylex_destroy();
+#else
+	printf("NO TIC VERSION DEFINED!\n");
+#endif
+
+	printf("%c\n", tp.framedelims[1]);
+}
+
+#endif /* !BAREBUILD */
