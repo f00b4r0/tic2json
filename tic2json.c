@@ -400,7 +400,7 @@ int main(int argc, char **argv)
 
 #else /* BAREBUILD */
 
-void ticmain(void)
+void tic2json_main(void)
 {
 	ticinit();
 	putchar(tp.framedelims[0]);

@@ -19,7 +19,7 @@
 #include "esp_vfs_dev.h"
 #include "driver/uart.h"
 
-void ticmain(void);
+void tic2json_main(void);
 
 void app_main(void)
 {
@@ -39,5 +39,5 @@ void app_main(void)
 	esp_vfs_dev_uart_use_driver(CONFIG_ESPTIC_UART_NUM);
 
 	while (1)
-		ticmain();
+		tic2json_main();
 }
