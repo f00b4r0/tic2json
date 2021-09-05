@@ -6,6 +6,7 @@ TICVERSIONS := 01 02
 
 TICS := $(addprefix ticv,$(TICVERSIONS))
 TICSDEFS := $(addprefix -DTICV,$(TICVERSIONS))
+LEXSRCS := $(addsuffix .lex.c,$(TICS))
 
 CFLAGS += $(TICSDEFS) -DBINNAME='"$(MAIN)"'
 
@@ -21,6 +22,8 @@ all:	$(MAIN)
 tic2json.o: $(addsuffix .tab.h,$(TICS))
 
 $(MAIN):  $(addsuffix .tab.o,$(TICS)) $(addsuffix .lex.o,$(TICS)) tic.o tic2json.o
+
+csources: $(LEXSRCS)
 
 clean:
 	$(RM) $(MAIN) *.output *.tab.h *.tab.c *.lex.c *.o
