@@ -1,0 +1,10 @@
+idf_component_register(SRC_DIRS "src")
+target_compile_options(${COMPONENT_LIB} PRIVATE -DBAREBUILD)
+add_custom_target(CSOURCES ALL make -C ${COMPONENT_DIR}/src csources)
+
+if(CONFIG_TIC2JSON_TICV01)
+add_definitions(-DTICV01)
+endif()
+if(CONFIG_TIC2JSON_TICV02)
+add_definitions(-DTICV02)
+endif()

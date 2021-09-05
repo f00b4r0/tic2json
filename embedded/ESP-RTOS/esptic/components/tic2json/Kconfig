@@ -1,0 +1,12 @@
+menu "tic2json"
+
+    choice TIC2JSON_TICVERSION
+    bool "TIC version"
+    default TIC2JSON_TICV02
+    config TIC2JSON_TICV01
+        bool "01 (Historique)"
+    config TIC2JSON_TICV02
+        bool "02 (Standard)"
+    endchoice
+
+endmenu

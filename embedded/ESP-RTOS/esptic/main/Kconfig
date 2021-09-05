@@ -1,0 +1,17 @@
+menu "esptic"
+
+config ESPTIC_BAUDRATE
+    int "TIC baudrate"
+    default 9600
+    help
+        TIC standard: 9600
+        TIC historique: 1200
+
+config ESPTIC_UART_NUM
+    int "TIC UART"
+    default 0
+    help
+        UART peripheral to use for TIC input and JSON output
+
+endmenu
+
