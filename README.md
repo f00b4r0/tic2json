@@ -70,3 +70,10 @@ The following command line can be used to send adequate data:
 ```sh
 stdbuf -oL ./tic2json -2 < /dev/ttyS0 2>/dev/null | while read line; do echo "$line" | nc -q 0 -u telegraf_host 8094; done
 ```
+
+## Embedded applications
+
+Application stubs are provided in the `embedded` folder for the following platforms:
+
+- Espressif ESP8266 and ESP32
+- Raspberry Pi Pico
