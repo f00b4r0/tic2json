@@ -4,10 +4,20 @@ An ENEDIS TIC (_Télé-Information Client_) protocol parser and converter
 
 More info (in French): http://hacks.slashdirt.org/sw/tic2json/
 
+Example Grafana dashboard:
+![screenshot](http://hacks.slashdirt.org/sw/tic2json/grafana-small.png)
+
+See a live snapshot [here](https://snapshot.raintank.io/dashboard/snapshot/a1IBs3c0q9mrOLpFwFnlHhgERy9ryQkM?orgId=2&from=1630921569846&to=1630943217317)
+
 ## License
 
-GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
+GPLv2-only - http://www.gnu.org/licenses/gpl-2.0.html
+
 Copyright: (C) 2021 Thibaut VARÈNE
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License version 2,
+as published by the Free Software Foundation.
 
 See LICENSE.md for details
 
