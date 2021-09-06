@@ -1,0 +1,11 @@
+execute_process(COMMAND make -C  ${CMAKE_CURRENT_LIST_DIR}/src csources)
+file(GLOB FILES src/*.c src/*.h)
+add_library(tic2json ${FILES})
+target_compile_options(tic2json PRIVATE -DBAREBUILD)
+
+if(TICVERSION_01)
+add_definitions(-DTICV01)
+endif()
+if(TICVERSION_02)
+add_definitions(-DTICV02)
+endif()
