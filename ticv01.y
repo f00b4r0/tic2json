@@ -70,7 +70,7 @@ extern uint8_t *etiq_en;
 
 %%
 
-start:	filter | frames
+start:	filter | frames ;
 
 /* filter config only */
 filter:
