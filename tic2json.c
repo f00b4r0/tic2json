@@ -26,8 +26,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #ifndef BAREBUILD
+ #include <unistd.h>	// getopt
  #include <err.h>
 #endif
 
