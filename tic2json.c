@@ -50,6 +50,7 @@
 extern bool filter_mode;
 extern bool *etiq_en;
 
+/** Global configuration details */
 static struct {
 	const char *idtag;
 	char framedelims[2];
@@ -59,6 +60,7 @@ static struct {
 	char ferr;
 } tp;
 
+/** enum for optflags bitfield */
 enum {
 	OPT_MASKZEROES	= 0x01,
 	OPT_CRFIELD	= 0x02,
@@ -68,6 +70,7 @@ enum {
 	OPT_PARSESTGE	= 0x20,
 };
 
+/** TIC units representation strings */
 static const char * tic_units[] = {
 	[U_SANS]	= "",
 	[U_WH]		= "Wh",

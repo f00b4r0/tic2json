@@ -9,7 +9,7 @@
 /**
  * @file
  * Interface for TIC parsers
- * Users of this interface must implement the functions listed at the bottom:
+ * Users of this interface must implement the functions declared at the bottom:
  *  - print_field()
  *  - frame_sep()
  *  - frame_err()
@@ -55,20 +55,22 @@ enum tic_unit {
 	T_HEX = 0x20,
 };
 
+/** Internal parser representation of a TIC etiquette */
 struct tic_etiquette {
-	uint8_t tok;
-	uint8_t unittype;
-	const char *label;
-	const char *desc;
+	uint8_t tok;		///< bison token number
+	uint8_t unittype;	///< combined unit and type (see @tic_unit @data_type)
+	const char *label;	///< TIC "etiquette", as an ASCII string
+	const char *desc;	///< corresponding TIC long description
 };
 
+/** Internal parser representation of a TIC field (i.e. body of a dataset) */
 struct tic_field {
-	struct tic_etiquette etiq;
+	struct tic_etiquette etiq;	///< the field "etiquette"
 	union {
 		char *s;
 		int i;
-	} data;
-	char *horodate;
+	} data;				///< the field data, if any
+	char *horodate;			///< the field horodate, if any
 };
 
 void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char *horodate, char *data);

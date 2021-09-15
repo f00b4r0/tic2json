@@ -8,8 +8,8 @@
 
 /**
  * @file
- * Complete lexer for ENEDIS' TIC protocol.
- * Supports version 01, a.k.a "historique" as found on ENEDIS' LINKY smart meter.
+ * Complete lexer for ENEDIS' TIC protocol version 01.
+ * Supports version 01, a.k.a "historique" as found on ENEDIS' Linky and Bleus meters.
  * Ref doc: https://www.enedis.fr/media/2027/download
  *
  * "le champ « étiquette » ne contient aucun caractère ayant une valeur égale à celle

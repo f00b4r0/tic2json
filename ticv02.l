@@ -6,9 +6,10 @@
 //  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
 */
 
-/*
- * Complete lexer for ENEDIS' TIC protocol.
- * Supports version 02, a.k.a "standard" as found on ENEDIS' LINKY smart meter.
+/**
+ * @file
+ * Complete lexer for ENEDIS' TIC protocol version 02.
+ * Supports version 02, a.k.a "standard" as found on ENEDIS' Linky smart meter.
  * Ref doc: https://www.enedis.fr/media/2035/download
  */
 
