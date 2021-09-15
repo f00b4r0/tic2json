@@ -1,3 +1,9 @@
+2.1
+	* Add '-V' commandline option to print version
+	* Simplify BAREBUILD and add embedded recipes
+	* Improve code documentation
+	* Add embedded stubs
+
 2.0
 	* Support TIC version 01 ("historique") for Linky, Bleu & CTR
 	* Purify parsers so they can be used for any output producer

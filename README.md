@@ -19,6 +19,9 @@ This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 2,
 as published by the Free Software Foundation.
 
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
 See LICENSE.md for details
 
 ## Dependencies
@@ -37,8 +40,8 @@ In particular, it is possible to build support for only specific version(s) of t
 
 The current implementation supports TIC versions **01** and **02** (a.k.a *historique* and *standard* modes).
 
-A tty interfaced to the meter TIC output can be set using the following `stty`
-settings:
+A tty interfaced to the meter TIC output (using e.g. [TIC2UART](http://hacks.slashdirt.org/hw/tic2uart/))
+can be set using the following `stty` settings:
 
 ```sh
 stty -F <serial_tty> <speed> raw evenp
@@ -47,8 +50,8 @@ stty -F <serial_tty> <speed> raw evenp
 Where `<serial_tty>` is the target tty (e.g. `/dev/ttyS0`) and `<speed>` is either 1200 or 9600.
 
 TIC output from electronic meters is either:
- - 7E1@1200bps for "historique" mode
- - 7E1@9600bps for "standard" mode
+ - **7E1@1200bps** for "historique" mode
+ - **7E1@9600bps** for "standard" mode
 
 ## Notes
 
@@ -68,7 +71,7 @@ For reference, the output of this tool is suitable for feeding a Telegraf 'socke
 The following command line can be used to send adequate data:
 
 ```sh
-stdbuf -oL ./tic2json -2 < /dev/ttyS0 2>/dev/null | while read line; do echo "$line" | nc -q 0 -u telegraf_host 8094; done
+stdbuf -oL ./tic2json -2 < /dev/ttyS0 | while read line; do echo "$line" | nc -q 0 -u telegraf_host 8094; done
 ```
 
 ## Embedded applications
@@ -77,3 +80,6 @@ Application stubs are provided in the `embedded` folder for the following platfo
 
 - Espressif ESP8266 and ESP32
 - Raspberry Pi Pico
+- ARM Mbed (not functional)
+
+These are very simple stubs that (ab)use the stdio interface provided by these platforms.

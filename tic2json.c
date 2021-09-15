@@ -45,7 +45,7 @@
  #warning BAREBUILD currently requires defining only one version of supported TIC and does not provide main()
 #endif
 
-#define TIC2JSON_VER	"2.0"
+#define TIC2JSON_VER	"2.1"
 
 extern bool filter_mode;
 extern bool *etiq_en;
