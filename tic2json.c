@@ -417,7 +417,7 @@ void tic2json_main(void)
 	ticv02yyparse();
 	ticv02yylex_destroy();
 #else
-	printf("NO TIC VERSION DEFINED!\n");
+	fprintf(stderr, "NO TIC VERSION DEFINED!\n");	// avoid utf-8
 #endif
 
 	printf("%c\n", tp.framedelims[1]);
