@@ -278,8 +278,7 @@ static inline void ticinit(void)
 #ifndef BAREBUILD
 static void usage(void)
 {
-	printf(	BINNAME " version " TIC2JSON_VER "\n"
-		"usage: " BINNAME " {-1|-2} [-dhlnruz] [-e fichier] [-i id] [-s N]\n"	// FIXME -1|-2 always shown
+	printf(	"usage: " BINNAME " {-1|-2} [-dhlnruVz] [-e fichier] [-i id] [-s N]\n"	// FIXME -1|-2 always shown
 #ifdef TICV01
 	        " -1\t\t"	"Analyse les trames TIC version 01 \"historique\"\n"
 #endif
@@ -289,13 +288,14 @@ static void usage(void)
 		"\n"
 		" -d\t\t"	"Émet les trames sous forme de dictionaire plutôt que de liste\n"
 		" -e fichier\t"	"Utilise <fichier> pour configurer le filtre d'étiquettes\n"
-		" -h\t\t"	"Montre ce message d'aide\n"
+		" -h\t\t"	"Montre ce message d'aide et quitte\n"
 		" -i id\t\t"	"Ajoute une balise \"id\" avec la valeur <id> à chaque groupe\n"
 		" -l\t\t"	"Ajoute les descriptions longues et les unitées de chaque groupe\n"
 		" -n\t\t"	"Insère une nouvelle ligne après chaque groupe\n"
 		" -r\t\t"	"Interprète les horodates en format RFC3339\n"
 		" -s N\t\t"	"Émet une trame toutes les <N> reçues\n"
 		" -u\t\t"	"Décode le registre de statut sous forme de dictionnaire\n"
+		" -V\t\t"	"Montre la version et quitte\n"
 		" -z\t\t"	"Masque les groupes numériques à zéro\n"
 		"\n"
 		"Note: le fichier de configuration du filtre d'étiquettes doit commencer par une ligne comportant\n"
@@ -324,7 +324,7 @@ int main(int argc, char **argv)
 
 	ticinit();
 
-	while ((ch = getopt(argc, argv, "12de:hi:lnrs:uz")) != -1) {
+	while ((ch = getopt(argc, argv, "12de:hi:lnrs:uVz")) != -1) {
 		switch (ch) {
 #ifdef TICV01
 		case '1':
@@ -372,6 +372,11 @@ int main(int argc, char **argv)
 		case 'u':
 			tp.optflags |= OPT_PARSESTGE;
 			break;
+		case 'V':
+			printf(	BINNAME " version " TIC2JSON_VER "\n"
+				"License GPLv2: GNU GPL version 2 <https://gnu.org/licenses/gpl-2.0.html>.\n"
+				"Copyright (C) 2021 Thibaut Varène.\n");
+			return 0;
 		case 'z':
 			tp.optflags |= OPT_MASKZEROES;
 			break;
