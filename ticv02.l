@@ -28,6 +28,14 @@
 /* we don't need the default rule */
 %option nodefault
 
+/* nounistd suppresses inclusion of the non-ANSI header file unistd.h.
+ This option is meant to target environments in which unistd.h does not exist.
+ Be aware that certain options may cause flex to generate code that relies on
+ functions normally found in unistd.h, (e.g. isatty(), read().)
+ If you wish to use these functions, you will have to inform your compiler where
+ to find them. See option-always-interactive. See option-read. */
+%option nounistd
+
 /* batch means that we'll never use the generated lexer interactively. */
 %option batch
 
