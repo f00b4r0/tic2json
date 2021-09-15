@@ -18,7 +18,7 @@
 #include "tic.h"
 
 bool filter_mode;
-uint8_t *etiq_en;	// type: < 255 tokens. This could be made a bit field if memory is a concern
+bool *etiq_en;		///< when non-NULL, a token-indexed array, where the related token is emitted if the value is true. @note This could be made a bit field if memory is a concern
 
 void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char *horodate, char *data)
 {

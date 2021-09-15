@@ -48,7 +48,7 @@
 #define TIC2JSON_VER	"2.0"
 
 extern bool filter_mode;
-extern uint8_t *etiq_en;
+extern bool *etiq_en;
 
 static struct {
 	const char *idtag;

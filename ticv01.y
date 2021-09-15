@@ -36,8 +36,7 @@ extern FILE *ticv01yyin;
 static void yyerror(const char *);
 
 extern bool filter_mode;
-extern uint8_t *etiq_en;
-
+extern bool *etiq_en;
 %}
 
 %union {
