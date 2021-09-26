@@ -45,7 +45,42 @@
 
 #ifdef BAREBUILD
  #warning BAREBUILD currently requires defining only one version of supported TIC and does not provide main()
-#endif
+ #ifdef PRINT2BUF
+  static char * ticbuf;
+  static size_t ticbufsize, ticbufavail;
+
+  /**
+   * TIC frame callback
+   * @param buf the buffer received from tic2json_main(), filled with JSON data
+   * @param size the length of JSON data currently in the buffer
+   */
+  typedef void (*tic2json_framecb_t)(char * buf, size_t size);
+  static tic2json_framecb_t ticframecb;
+
+  #include <stdarg.h>
+  #undef ticprintf
+  int ticprintf(const char * restrict format, ...)
+  {
+	int ret;
+	va_list args;
+
+	va_start(args, format);
+	ret = vsnprintf(ticbuf + (ticbufsize - ticbufavail), ticbufavail, format, args);
+	va_end(args);
+
+	if (ret >= ticbufavail) {
+		fprintf(stderr, "ERROR: output buffer too small!\n");
+		return ticbufavail;
+	}
+	else if (ret < 0)
+		return ret;
+
+	ticbufavail -= ret;
+
+	return (ret);
+  }
+ #endif	/* PRINT2BUF */
+#endif	/* BAREBUILD */
 
 #define TIC2JSON_VER	"2.1"
 
@@ -257,7 +292,15 @@ void frame_sep(void)
 		tp.framecount = tp.skipframes;
 		if (tp.optflags & OPT_DICTOUT)
 			ticprintf("%c \"_tvalide\": %d", tp.fdelim, !tp.ferr);
+#ifdef PRINT2BUF
+		ticprintf("%c\n", tp.framedelims[1]);
+		if (ticframecb)
+			ticframecb(ticbuf, ticbufsize-ticbufavail);
+		ticbufavail = ticbufsize;	// reset buffer
+		ticprintf("%c", tp.framedelims[0]);
+#else
 		ticprintf("%c\n%c", tp.framedelims[1], tp.framedelims[0]);
+#endif
 	}
 	tp.fdelim = ' ';
 	tp.ferr = 0;
@@ -408,9 +451,26 @@ int main(int argc, char **argv)
 
 #else /* BAREBUILD */
 
+#ifdef PRINT2BUF
+/**
+ * tic2json_main(), print to buffer variant.
+ * @param buf an allocated buffer to write JSON data to
+ * @param size the size of the buffer
+ * @param an optional callback to call after each printed frame, before the buffer content is overwritten.
+ */
+void tic2json_main(char * buf, size_t size, tic2json_framecb_t cb)
+#else
 void tic2json_main(void)
+#endif
 {
 	ticinit();
+
+#ifdef PRINT2BUF
+	ticbuf = buf;
+	ticbufavail = ticbufsize = size;
+	ticframecb = cb;
+#endif
+
 	ticprintf("%c", tp.framedelims[0]);
 
 #if defined(TICV01)
