@@ -41,6 +41,8 @@
  int ticv02yylex_destroy();
 #endif
 
+#define ticprintf(format, ...)	printf(format, ## __VA_ARGS__)
+
 #ifdef BAREBUILD
  #warning BAREBUILD currently requires defining only one version of supported TIC and does not provide main()
 #endif
@@ -135,7 +137,7 @@ static void print_stge_data(int data)
 		"PM3",
 	};
 
-	printf("{ "
+	ticprintf("{ "
 		"\"Contact sec\": \"%s\",%c"
 		"\"Organe de coupure\": \"%s\",%c"
 		"\"État du cache-bornes distributeur\": \"%s\",%c"
@@ -192,12 +194,12 @@ void print_field(const struct tic_field *field)
 
 	format = (tp.optflags & OPT_DICTOUT) ? fdictout : flistout;
 
-	printf(format, tp.fdelim, field->etiq.label);
+	ticprintf(format, tp.fdelim, field->etiq.label);
 	switch (field->etiq.unittype & 0x0F) {
 		case U_SANS:
 			type = field->etiq.unittype & 0xF0;
 			if (T_STRING == type) {
-				printf("\"%s\"", field->data.s ? field->data.s : "");
+				ticprintf("\"%s\"", field->data.s ? field->data.s : "");
 				break;
 			}
 #ifdef TICV02
@@ -209,7 +211,7 @@ void print_field(const struct tic_field *field)
 #endif /* TICV02 */
 			// fallthrough
 		default:
-			printf("%d", field->data.i);
+			ticprintf("%d", field->data.i);
 			break;
 	}
 
@@ -231,22 +233,20 @@ void print_field(const struct tic_field *field)
 					o = "+01:00";
 					break;
 			}
-			printf(", \"horodate\": \"20%.2s-%.2s-%.2sT%.2s:%.2s:%.2s%s\"", d+1, d+3, d+5, d+7, d+9, d+11, o);
+			ticprintf(", \"horodate\": \"20%.2s-%.2s-%.2sT%.2s:%.2s:%.2s%s\"", d+1, d+3, d+5, d+7, d+9, d+11, o);
 		}
 		else
-			printf(", \"horodate\": \"%s\"", field->horodate);
+			ticprintf(", \"horodate\": \"%s\"", field->horodate);
 	}
 #endif /* TICV02 */
 
 	if (tp.optflags & OPT_DESCFORM)
-		printf(", \"desc\": \"%s\", \"unit\": \"%s\"", field->etiq.desc, tic_units[(field->etiq.unittype & 0x0F)]);
+		ticprintf(", \"desc\": \"%s\", \"unit\": \"%s\"", field->etiq.desc, tic_units[(field->etiq.unittype & 0x0F)]);
 
 	if (tp.idtag)
-		printf(", \"id\": \"%s\"", tp.idtag);
+		ticprintf(", \"id\": \"%s\"", tp.idtag);
 
-	putchar('}');
-	if (tp.optflags & OPT_CRFIELD)
-		putchar('\n');
+	ticprintf("}%c", (tp.optflags & OPT_CRFIELD) ? '\n': ' ');
 
 	tp.fdelim = ',';
 }
@@ -256,8 +256,8 @@ void frame_sep(void)
 	if (!tp.framecount--) {
 		tp.framecount = tp.skipframes;
 		if (tp.optflags & OPT_DICTOUT)
-			printf("%c \"_tvalide\": %d", tp.fdelim, !tp.ferr);
-		printf ("%c\n%c", tp.framedelims[1], tp.framedelims[0]);
+			ticprintf("%c \"_tvalide\": %d", tp.fdelim, !tp.ferr);
+		ticprintf("%c\n%c", tp.framedelims[1], tp.framedelims[0]);
 	}
 	tp.fdelim = ' ';
 	tp.ferr = 0;
@@ -411,7 +411,7 @@ int main(int argc, char **argv)
 void tic2json_main(void)
 {
 	ticinit();
-	putchar(tp.framedelims[0]);
+	ticprintf("%c", tp.framedelims[0]);
 
 #if defined(TICV01)
 	ticv01yyparse();
@@ -423,7 +423,7 @@ void tic2json_main(void)
 	fprintf(stderr, "NO TIC VERSION DEFINED!\n");	// avoid utf-8
 #endif
 
-	printf("%c\n", tp.framedelims[1]);
+	ticprintf("%c\n", tp.framedelims[1]);
 }
 
 #endif /* !BAREBUILD */
