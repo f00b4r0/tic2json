@@ -1,5 +1,17 @@
 menu "esptic"
 
+config ESPTIC_WIFI_SSID
+    string "WiFi SSID"
+    default "myssid"
+    help
+        SSID (network name) to connect to.
+
+config ESPTIC_WIFI_PASSWORD
+    string "WiFi Password"
+    default "mypassword"
+    help
+        WiFi password (WPA2) to use.
+
 config ESPTIC_BAUDRATE
     int "TIC baudrate"
     default 9600
@@ -11,7 +23,15 @@ config ESPTIC_UART_NUM
     int "TIC UART"
     default 0
     help
-        UART peripheral to use for TIC input and JSON output
+        UART peripheral to use for TIC input
+
+config ESPTIC_UDP_HOST
+    string "UDP remote hostname"
+    default "myhost"
+
+config ESPTIC_UDP_PORT
+    string "UDP remote port"
+    default "8094"
 
 endmenu
 

@@ -1,6 +1,6 @@
 execute_process(COMMAND make -C  ${CMAKE_CURRENT_LIST_DIR}/src csources)
 idf_component_register(SRC_DIRS "src")
-target_compile_options(${COMPONENT_LIB} PRIVATE -DBAREBUILD)
+target_compile_options(${COMPONENT_LIB} PRIVATE -DBAREBUILD -DPRINT2BUF)
 
 if(CONFIG_TIC2JSON_TICV01)
 add_definitions(-DTICV01)
