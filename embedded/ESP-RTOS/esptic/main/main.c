@@ -8,8 +8,9 @@
 
 /**
  * @file
- * @note: Memory usage detailed below has been tested on ESP8266 in "Release" (-Os) build:
  * Receives TIC on RX, outputs JSON via UDP.
+ * @note: The following memory usage was observed while running tic2json_main() as part of app_main(),
+ * tested on ESP8266 in "Release" (-Os) build:
  *  - TICV01: max stack 5400, max heap: 3764+80
  *  - TICV02: max stack 5816, max heap: 3764+80
  */
@@ -89,10 +90,24 @@ static void ticframecb(char * buf, size_t size)
 	sendto(Gsockfd, buf, size, 0, &Gai_addr, Gai_addrlen);
 }
 
-void app_main(void)
+static void tic_task(void *pvParameter)
 {
 	FILE *yyin;
 	static char buf[UDPBUFSIZE];
+
+	yyin = fopen("/dev/uart/" XSTR(CONFIG_ESPTIC_UART_NUM), "r");
+	if (!yyin) {
+		ESP_LOGE(TAG, "Cannot open UART");
+		abort();
+	}
+
+	while (1)
+		tic2json_main(yyin, buf, UDPBUFSIZE, ticframecb);
+}
+
+void app_main(void)
+{
+	BaseType_t ret;
 
 	uart_config_t uart_config = {
 		.baud_rate = CONFIG_ESPTIC_BAUDRATE,
@@ -115,14 +130,11 @@ void app_main(void)
 	/* setup UDP client */
 	ESP_ERROR_CHECK(udp_setup());
 
-	yyin = fopen("/dev/uart/" XSTR(CONFIG_ESPTIC_UART_NUM), "r");
-	if (!yyin) {
-		ESP_LOGE(TAG, "Cannot open UART");
+	ret = xTaskCreate(&tic_task, "tic", 8192, NULL, 5, NULL);
+	if (ret != pdPASS) {
+		ESP_LOGE(TAG, "Failed to create tic task");
 		abort();
 	}
 
 	ESP_LOGI(TAG, "Rock'n'roll");
-
-	while (1)
-		tic2json_main(yyin, buf, UDPBUFSIZE, ticframecb);
 }
