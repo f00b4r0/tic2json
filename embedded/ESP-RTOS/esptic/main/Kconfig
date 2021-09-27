@@ -33,5 +33,9 @@ config ESPTIC_UDP_PORT
     string "UDP remote port"
     default "8094"
 
+config ESPTIC_LED_GPIO_NUM
+    int "LED GPIO NUM"
+    default 2
+
 endmenu
 

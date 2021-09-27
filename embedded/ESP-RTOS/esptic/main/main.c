@@ -24,6 +24,7 @@
 #include "esp_vfs_dev.h"
 #include "esp_log.h"
 #include "driver/uart.h"
+#include "driver/gpio.h"
 
 #include "lwip/err.h"
 #include "lwip/sockets.h"
@@ -33,6 +34,7 @@
 #define XSTR(s) STR(s)
 #define STR(s) #s
 
+#define LED_GPIO	CONFIG_ESPTIC_LED_GPIO_NUM
 #define UDPBUFSIZE	1432	// avoid fragmentation
 
 static const char * TAG = "esptic";
@@ -105,6 +107,19 @@ static void tic_task(void *pvParameter)
 		tic2json_main(yyin, buf, UDPBUFSIZE, ticframecb);
 }
 
+static void ledhb_task(void *pvParameter)
+{
+	uint32_t level = 0;
+
+	gpio_set_direction(LED_GPIO, GPIO_MODE_OUTPUT);
+
+	while (1) {
+		gpio_set_level(LED_GPIO, level);
+		level = !level;
+		vTaskDelay(1000 / portTICK_RATE_MS);
+	}
+}
+
 void app_main(void)
 {
 	BaseType_t ret;
@@ -135,6 +150,8 @@ void app_main(void)
 		ESP_LOGE(TAG, "Failed to create tic task");
 		abort();
 	}
+
+	xTaskCreate(&ledhb_task, "lhb", 512, NULL, 1, NULL);
 
 	ESP_LOGI(TAG, "Rock'n'roll");
 }
