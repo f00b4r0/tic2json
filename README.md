@@ -57,9 +57,11 @@ TIC output from electronic meters is either:
 
 Implementing other types of outputs (XML, etc) should be trivial given the implementation.
 
+### Using output with Telegraf
+
 For reference, the output of this tool is suitable for feeding a Telegraf 'socket_listener' configured as follows:
 
-```
+```toml
 [[inputs.socket_listener]]
   service_address = "udp://:8094"
   data_format = "json"
@@ -68,18 +70,47 @@ For reference, the output of this tool is suitable for feeding a Telegraf 'socke
   tag_keys = ["id"]
 ````
 
-The following command line can be used to send adequate data:
+The following command line can be used to send adequate data (works for either TIC 01 or TIC 02):
 
 ```sh
-stdbuf -oL ./tic2json -2 < /dev/ttyS0 | while read line; do echo "$line" | nc -q 0 -u telegraf_host 8094; done
+stdbuf -oL ./tic2json -1 < /dev/ttyS0 | while read line; do echo "$line" | nc -q 0 -u telegraf_host 8094; done
 ```
+
+Alternatively, using dictionnary output and JSON_v2 parser for TIC "standard" processing:
+
+```toml
+[[inputs.socket_listener]]
+  service_address = "udp://:8094"
+  data_format = "json_v2"
+  [[inputs.socket_listener.json_v2]]
+    measurement_name = "ticv2"
+    timestamp_path = "DATE.horodate"
+    timestamp_format = "rfc3339"
+    timestamp_timezone = "Local"
+    [[inputs.socket_listener.json_v2.object]]
+      path = "@this"
+      included_keys = [ "PRM_data", "EAST_data", "IRMS1_data", "URMS1_data", "SINSTS_data", "SMAXSN_data", "UMOY1_data" ]
+      tags = [ "PRM_data" ]
+      [inputs.socket_listener.json_v2.object.renames]
+        PRM_data = "PRM"
+```
+
+Fed with:
+
+```sh
+stdbuf -oL ./tic2json -2 -dr < /dev/ttyS0 | while read line; do echo "$line" | nc -q 0 -u telegraf_host 8094; done
+```
+
+Will only log `EAST`, `IRMS1`, `URMS1`, `SINSTS`, `SMAXSN` and `UMOY1`, tagged with `PRM` (the meter's ID), at the timestamp provided by the meter.
 
 ## Embedded applications
 
-Application stubs are provided in the `embedded` folder for the following platforms:
+Embedded application are provided in the `embedded` folder for the following platforms:
 
-- Espressif ESP8266 and ESP32
-- Raspberry Pi Pico
+- Espressif ESP8266 and ESP32 (send TIC JSON data over UDP)
+- Raspberry Pi Pico (basic demonstration stub)
 - ARM Mbed (not functional)
 
-These are very simple stubs that (ab)use the stdio interface provided by these platforms.
+Only the Espressif variant is a fully fledged application, capable of logging to a remote UDP host.
+
+The others are very simple stubs that (ab)use the stdio interface provided by these platforms, as a starting point example.
