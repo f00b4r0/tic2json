@@ -37,5 +37,15 @@ config ESPTIC_LED_GPIO_NUM
     int "LED GPIO NUM"
     default 2
 
+config ESPTIC_LED_ACTIVE_HIGH
+    bool "LED active high"
+    help
+        Set if LED is active high, unset otherwise
+
+config ESPTIC_LED_ACTIVE_STATE
+    int
+    default 1 if ESPTIC_LED_ACTIVE_HIGH
+    default 0
+
 endmenu
 

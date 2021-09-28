@@ -92,6 +92,9 @@ static void ticframecb(char * buf, size_t size, bool valid)
 {
 	if (valid)
 		sendto(Gsockfd, buf, size, 0, &Gai_addr, Gai_addrlen);
+
+	// blink after each complete frame
+	gpio_set_level(LED_GPIO, !gpio_get_level(LED_GPIO));
 }
 
 static void tic_task(void *pvParameter)
@@ -107,19 +110,6 @@ static void tic_task(void *pvParameter)
 
 	while (1)
 		tic2json_main(yyin, TIC2JSON_OPT_MASKZEROES|TIC2JSON_OPT_DICTOUT|TIC2JSON_OPT_LONGDATE, buf, UDPBUFSIZE, ticframecb);
-}
-
-static void ledhb_task(void *pvParameter)
-{
-	uint32_t level = 0;
-
-	gpio_set_direction(LED_GPIO, GPIO_MODE_OUTPUT);
-
-	while (1) {
-		gpio_set_level(LED_GPIO, level);
-		level = !level;
-		vTaskDelay(1000 / portTICK_RATE_MS);
-	}
 }
 
 void app_main(void)
@@ -147,13 +137,14 @@ void app_main(void)
 	/* setup UDP client */
 	ESP_ERROR_CHECK(udp_setup());
 
+	ESP_ERROR_CHECK(gpio_set_direction(LED_GPIO, GPIO_MODE_OUTPUT));
+	gpio_set_level(LED_GPIO, CONFIG_ESPTIC_LED_ACTIVE_STATE);
+
 	ret = xTaskCreate(&tic_task, "tic", 8192, NULL, 5, NULL);
 	if (ret != pdPASS) {
 		ESP_LOGE(TAG, "Failed to create tic task");
 		abort();
 	}
-
-	xTaskCreate(&ledhb_task, "lhb", 512, NULL, 1, NULL);
 
 	ESP_LOGI(TAG, "Rock'n'roll");
 }
