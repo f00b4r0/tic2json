@@ -456,6 +456,11 @@ void tic2json_main(FILE * yyin, int optflags)
 	ticinit();
 	tp.optflags = optflags;
 
+	if (tp.optflags & TIC2JSON_OPT_DICTOUT) {
+		tp.framedelims[0] = '{';
+		tp.framedelims[1] = '}';
+	}
+
 #ifdef PRINT2BUF
 	ticbuf = buf;
 	ticbufavail = ticbufsize = size;
