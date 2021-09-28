@@ -11,6 +11,8 @@
  * Receives TIC on RX, outputs JSON on TX.
  */
 
+#include <stdio.h>
+
 #include "pico/stdio_uart.h"
 #include "hardware/uart.h"
 
@@ -22,7 +24,7 @@
  #define TICBAUDRATE 1200
 #endif
 
-void tic2json_main(void);
+void tic2json_main(FILE * yyin);
 
 int main()
 {
@@ -32,7 +34,7 @@ int main()
 	uart_set_format(UART_ID, 7, 1, UART_PARITY_EVEN);
 
 	while (1)
-		tic2json_main();
+		tic2json_main(stdin);
 
 	return 0;
 }

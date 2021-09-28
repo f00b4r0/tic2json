@@ -451,16 +451,20 @@ int main(int argc, char **argv)
 
 #else /* BAREBUILD */
 
+extern FILE *ticv01yyin;
+extern FILE *ticv02yyin;
+
 #ifdef PRINT2BUF
 /**
  * tic2json_main(), print to buffer variant.
+ * @param yyin the FILE to read TIC frames from
  * @param buf an allocated buffer to write JSON data to
  * @param size the size of the buffer
  * @param an optional callback to call after each printed frame, before the buffer content is overwritten.
  */
-void tic2json_main(char * buf, size_t size, tic2json_framecb_t cb)
+void tic2json_main(FILE * yyin, char * buf, size_t size, tic2json_framecb_t cb)
 #else
-void tic2json_main(void)
+void tic2json_main(FILE * yyin)
 #endif
 {
 	ticinit();
@@ -474,9 +478,11 @@ void tic2json_main(void)
 	ticprintf("%c", tp.framedelims[0]);
 
 #if defined(TICV01)
+	ticv01yyin = yyin;
 	ticv01yyparse();
 	ticv01yylex_destroy();
 #elif defined(TICV02)
+	ticv02yyin = yyin;
 	ticv02yyparse();
 	ticv02yylex_destroy();
 #else

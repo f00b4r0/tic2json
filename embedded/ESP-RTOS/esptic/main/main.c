@@ -14,12 +14,14 @@
  *  - TICV02: max stack 5816, max heap: 3764+80
  */
 
+#include <stdio.h>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_vfs_dev.h"
 #include "driver/uart.h"
 
-void tic2json_main(void);
+void tic2json_main(FILE * yyin);
 
 void app_main(void)
 {
@@ -39,5 +41,5 @@ void app_main(void)
 	esp_vfs_dev_uart_use_driver(CONFIG_ESPTIC_UART_NUM);
 
 	while (1)
-		tic2json_main();
+		tic2json_main(stdin);
 }
