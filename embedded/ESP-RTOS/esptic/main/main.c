@@ -31,6 +31,8 @@
 #include "lwip/sys.h"
 #include "lwip/netdb.h"
 
+#include "../components/tic2json/src/tic2json.h"
+
 #define XSTR(s) STR(s)
 #define STR(s) #s
 
@@ -42,8 +44,7 @@ static struct sockaddr Gai_addr;
 static socklen_t Gai_addrlen;
 static int Gsockfd;
 
-typedef void (*tic2json_framecb_t)(char * buf, size_t size);
-void tic2json_main(FILE * yyin, char * buf, size_t size, tic2json_framecb_t cb);
+void tic2json_main(FILE * yyin, int optflags, char * buf, size_t size, tic2json_framecb_t cb);
 void wifista_main(void);
 
 static int udp_setup(void)
@@ -104,7 +105,7 @@ static void tic_task(void *pvParameter)
 	}
 
 	while (1)
-		tic2json_main(yyin, buf, UDPBUFSIZE, ticframecb);
+		tic2json_main(yyin, TIC2JSON_OPT_MASKZEROES|TIC2JSON_OPT_DICTOUT|TIC2JSON_OPT_LONGDATE, buf, UDPBUFSIZE, ticframecb);
 }
 
 static void ledhb_task(void *pvParameter)

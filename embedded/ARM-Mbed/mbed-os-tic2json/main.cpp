@@ -29,7 +29,7 @@ namespace mbed
 }
 
 extern "C" {
-	void tic2json_main(FILE * yyin);
+	void tic2json_main(FILE * yyin, int optflags);
 }
 
 
@@ -37,7 +37,7 @@ extern "C" {
 int main()
 {
 	while (true)
-		tic2json_main(stdin);
+		tic2json_main(stdin, 0);
 
 	return 0;
 }

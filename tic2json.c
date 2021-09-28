@@ -449,16 +449,18 @@ extern FILE *ticv02yyin;
 /**
  * tic2json_main(), print to buffer variant.
  * @param yyin the FILE to read TIC frames from
+ * @param optflags bitfield for tuning parser behavior
  * @param buf an allocated buffer to write JSON data to
  * @param size the size of the buffer
  * @param an optional callback to call after each printed frame, before the buffer content is overwritten.
  */
-void tic2json_main(FILE * yyin, char * buf, size_t size, tic2json_framecb_t cb)
+void tic2json_main(FILE * yyin, int optflags, char * buf, size_t size, tic2json_framecb_t cb)
 #else
-void tic2json_main(FILE * yyin)
+void tic2json_main(FILE * yyin, int optflags)
 #endif
 {
 	ticinit();
+	tp.optflags = optflags;
 
 #ifdef PRINT2BUF
 	ticbuf = buf;

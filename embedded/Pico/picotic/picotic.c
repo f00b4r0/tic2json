@@ -24,7 +24,7 @@
  #define TICBAUDRATE 1200
 #endif
 
-void tic2json_main(FILE * yyin);
+void tic2json_main(FILE * yyin, int optflags);
 
 int main()
 {
@@ -34,7 +34,7 @@ int main()
 	uart_set_format(UART_ID, 7, 1, UART_PARITY_EVEN);
 
 	while (1)
-		tic2json_main(stdin);
+		tic2json_main(stdin, 0);
 
 	return 0;
 }
