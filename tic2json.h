@@ -24,6 +24,12 @@ enum {
 	TIC2JSON_OPT_PARSESTGE	= 0x20,
 };
 
-typedef void (*tic2json_framecb_t)(char * buf, size_t size);
+/**
+ * TIC frame callback
+ * @param buf the buffer received from tic2json_main(), filled with JSON data
+ * @param size the length of JSON data currently in the buffer
+ * @param valid true if TIC frame is valid, false otherwise
+ */
+typedef void (*tic2json_framecb_t)(char * buf, size_t size, bool valid);
 
 #endif /* tic2json_h */

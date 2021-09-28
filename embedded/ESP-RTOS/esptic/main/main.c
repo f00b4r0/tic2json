@@ -88,9 +88,10 @@ cleanup:
 
 }
 
-static void ticframecb(char * buf, size_t size)
+static void ticframecb(char * buf, size_t size, bool valid)
 {
-	sendto(Gsockfd, buf, size, 0, &Gai_addr, Gai_addrlen);
+	if (valid)
+		sendto(Gsockfd, buf, size, 0, &Gai_addr, Gai_addrlen);
 }
 
 static void tic_task(void *pvParameter)

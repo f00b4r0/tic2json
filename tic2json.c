@@ -50,12 +50,6 @@
  #ifdef PRINT2BUF
   static char * ticbuf;
   static size_t ticbufsize, ticbufavail;
-
-  /**
-   * TIC frame callback
-   * @param buf the buffer received from tic2json_main(), filled with JSON data
-   * @param size the length of JSON data currently in the buffer
-   */
   static tic2json_framecb_t ticframecb;
 
   #include <stdarg.h>
@@ -95,7 +89,7 @@ static struct {
 	char fdelim;
 	int optflags;
 	unsigned int skipframes, framecount;
-	char ferr;
+	bool ferr;
 } tp;
 
 /** TIC units representation strings */
@@ -286,7 +280,7 @@ void frame_sep(void)
 #ifdef PRINT2BUF
 		ticprintf("%c\n", tp.framedelims[1]);
 		if (ticframecb)
-			ticframecb(ticbuf, ticbufsize-ticbufavail);
+			ticframecb(ticbuf, ticbufsize-ticbufavail, !tp.ferr);
 		ticbufavail = ticbufsize;	// reset buffer
 		ticprintf("%c", tp.framedelims[0]);
 #else
