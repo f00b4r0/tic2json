@@ -41,6 +41,8 @@
  int ticv02yylex_destroy();
 #endif
 
+#include "tic2json.h"
+
 #define ticprintf(format, ...)	printf(format, ## __VA_ARGS__)
 
 #ifdef BAREBUILD
@@ -54,7 +56,6 @@
    * @param buf the buffer received from tic2json_main(), filled with JSON data
    * @param size the length of JSON data currently in the buffer
    */
-  typedef void (*tic2json_framecb_t)(char * buf, size_t size);
   static tic2json_framecb_t ticframecb;
 
   #include <stdarg.h>
@@ -97,16 +98,6 @@ static struct {
 	char ferr;
 } tp;
 
-/** enum for optflags bitfield */
-enum {
-	OPT_MASKZEROES	= 0x01,
-	OPT_CRFIELD	= 0x02,
-	OPT_DESCFORM	= 0x04,
-	OPT_DICTOUT	= 0x08,
-	OPT_LONGDATE	= 0x10,
-	OPT_PARSESTGE	= 0x20,
-};
-
 /** TIC units representation strings */
 static const char * tic_units[] = {
 	[U_SANS]	= "",
@@ -124,7 +115,7 @@ static const char * tic_units[] = {
 #ifdef TICV02
 static void print_stge_data(int data)
 {
-	const char sep = (tp.optflags & OPT_CRFIELD) ? '\n' : ' ';
+	const char sep = (tp.optflags & TIC2JSON_OPT_CRFIELD) ? '\n' : ' ';
 	uint32_t d = (uint32_t)data;
 
 
@@ -223,11 +214,11 @@ void print_field(const struct tic_field *field)
 
 	// filters
 	if (tp.framecount ||
-		((tp.optflags & OPT_MASKZEROES) && (T_STRING != (field->etiq.unittype & 0xF0)) && (0 == field->data.i)) ||
+		((tp.optflags & TIC2JSON_OPT_MASKZEROES) && (T_STRING != (field->etiq.unittype & 0xF0)) && (0 == field->data.i)) ||
 		(etiq_en && !etiq_en[field->etiq.tok]))
 		return;
 
-	format = (tp.optflags & OPT_DICTOUT) ? fdictout : flistout;
+	format = (tp.optflags & TIC2JSON_OPT_DICTOUT) ? fdictout : flistout;
 
 	ticprintf(format, tp.fdelim, field->etiq.label);
 	switch (field->etiq.unittype & 0x0F) {
@@ -238,7 +229,7 @@ void print_field(const struct tic_field *field)
 				break;
 			}
 #ifdef TICV02
-			else if ((T_HEX == type) && (tp.optflags & OPT_PARSESTGE)) {
+			else if ((T_HEX == type) && (tp.optflags & TIC2JSON_OPT_PARSESTGE)) {
 				// XXX abuse the fact that STGE is the only U_SANS|T_HEX field
 				print_stge_data(field->data.i);
 				break;
@@ -252,7 +243,7 @@ void print_field(const struct tic_field *field)
 
 #ifdef TICV02
 	if (field->horodate) {
-		if (tp.optflags & OPT_LONGDATE) {
+		if (tp.optflags & TIC2JSON_OPT_LONGDATE) {
 			const char *o, *d = field->horodate;
 			switch (d[0]) {
 				default:
@@ -275,13 +266,13 @@ void print_field(const struct tic_field *field)
 	}
 #endif /* TICV02 */
 
-	if (tp.optflags & OPT_DESCFORM)
+	if (tp.optflags & TIC2JSON_OPT_DESCFORM)
 		ticprintf(", \"desc\": \"%s\", \"unit\": \"%s\"", field->etiq.desc, tic_units[(field->etiq.unittype & 0x0F)]);
 
 	if (tp.idtag)
 		ticprintf(", \"id\": \"%s\"", tp.idtag);
 
-	ticprintf("}%c", (tp.optflags & OPT_CRFIELD) ? '\n': ' ');
+	ticprintf("}%c", (tp.optflags & TIC2JSON_OPT_CRFIELD) ? '\n': ' ');
 
 	tp.fdelim = ',';
 }
@@ -290,7 +281,7 @@ void frame_sep(void)
 {
 	if (!tp.framecount--) {
 		tp.framecount = tp.skipframes;
-		if (tp.optflags & OPT_DICTOUT)
+		if (tp.optflags & TIC2JSON_OPT_DICTOUT)
 			ticprintf("%c \"_tvalide\": %d", tp.fdelim, !tp.ferr);
 #ifdef PRINT2BUF
 		ticprintf("%c\n", tp.framedelims[1]);
@@ -391,7 +382,7 @@ int main(int argc, char **argv)
 			break;
 #endif
 		case 'd':
-			tp.optflags |= OPT_DICTOUT;
+			tp.optflags |= TIC2JSON_OPT_DICTOUT;
 			tp.framedelims[0] = '{'; tp.framedelims[1] = '}';
 			break;
 		case 'e':
@@ -404,19 +395,19 @@ int main(int argc, char **argv)
 			tp.idtag = optarg;
 			break;
 		case 'l':
-			tp.optflags |= OPT_DESCFORM;
+			tp.optflags |= TIC2JSON_OPT_DESCFORM;
 			break;
 		case 'n':
-			tp.optflags |= OPT_CRFIELD;
+			tp.optflags |= TIC2JSON_OPT_CRFIELD;
 			break;
 		case 'r':
-			tp.optflags |= OPT_LONGDATE;
+			tp.optflags |= TIC2JSON_OPT_LONGDATE;
 			break;
 		case 's':
 			tp.skipframes = (unsigned int)strtol(optarg, NULL, 10);
 			break;
 		case 'u':
-			tp.optflags |= OPT_PARSESTGE;
+			tp.optflags |= TIC2JSON_OPT_PARSESTGE;
 			break;
 		case 'V':
 			printf(	BINNAME " version " TIC2JSON_VER "\n"
@@ -424,7 +415,7 @@ int main(int argc, char **argv)
 				"Copyright (C) 2021 Thibaut Varène.\n");
 			return 0;
 		case 'z':
-			tp.optflags |= OPT_MASKZEROES;
+			tp.optflags |= TIC2JSON_OPT_MASKZEROES;
 			break;
 		default:
 			usage();
