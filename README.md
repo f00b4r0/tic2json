@@ -31,7 +31,7 @@ See LICENSE.md for details
  
 ## Building
 
-To build, run `make`
+To build, run `cd src; make`
 
 **Note:** the build can be adjusted through the top Makefile variables.
 In particular, it is possible to build support for only specific version(s) of the TIC.
