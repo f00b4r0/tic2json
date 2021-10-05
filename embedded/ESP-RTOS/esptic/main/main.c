@@ -46,7 +46,7 @@
 #endif
 
 static const char * TAG = "esptic";
-static struct sockaddr Gai_addr;
+static struct sockaddr_storage Gai_addr;
 static socklen_t Gai_addrlen;
 static int Gsockfd;
 
@@ -83,7 +83,7 @@ static int udp_setup(void)
 		goto cleanup;
 	}
 
-	memcpy(&Gai_addr, rp->ai_addr, sizeof(Gai_addr));
+	memcpy(&Gai_addr, rp->ai_addr, rp->ai_addrlen);
 	Gai_addrlen = rp->ai_addrlen;
 
 	ret = ESP_OK;
@@ -97,7 +97,7 @@ cleanup:
 static void ticframecb(char * buf, size_t size, bool valid)
 {
 	if (valid)
-		sendto(Gsockfd, buf, size, 0, &Gai_addr, Gai_addrlen);
+		sendto(Gsockfd, buf, size, 0, (struct sockaddr *)&Gai_addr, Gai_addrlen);
 
 	// blink after each complete frame
 	gpio_set_level(LED_GPIO, !gpio_get_level(LED_GPIO));
