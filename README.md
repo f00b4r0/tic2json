@@ -103,6 +103,9 @@ stdbuf -oL ./tic2json -2 -dr < /dev/ttyS0 | while read line; do echo "$line" | n
 
 Will only log `EAST`, `IRMS1`, `URMS1`, `SINSTS`, `SMAXSN` and `UMOY1`, tagged with `PRM` (the meter's ID), at the timestamp provided by the meter.
 
+Note: 'socket_listener' expects _exactly_ 1 JSON object per UDP packet (decoding of data is done on a per-packet basis),
+hence the need to send each line individually with `nc`.
+
 ## Embedded applications
 
 Embedded application are provided in the `embedded` folder for the following platforms:
