@@ -1,4 +1,0 @@
-{
-    "name": "tic2json",
-    "macros": ["BAREBUILD", "TICV02"]
-}

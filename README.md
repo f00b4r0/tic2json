@@ -115,6 +115,5 @@ The following embedded applications are based on this tool
 Stub applications are provided in the `embedded` folder for the following platforms:
 
 - Raspberry Pi Pico (basic demonstration stub): **picotic** gets TIC data on RX pin, outputs formatted JSON on UART TX
-- ARM Mbed (not functional)
 
 These are very simple stubs that (ab)use the stdio interface provided by these platforms, as a starting point example.
