@@ -108,12 +108,13 @@ hence the need to send each line individually with `nc`. Another alternative is 
 
 ## Embedded applications
 
-Embedded application are provided in the `embedded` folder for the following platforms:
+The following embedded applications are based on this tool
 
-- Espressif ESP8266 and ESP32 (send TIC JSON data over UDP)
-- Raspberry Pi Pico (basic demonstration stub)
+- [esptic2udp](http://vcs.slashdirt.org/git/sw/ESP/esptic2udp.git) - Espressif ESP8266/ESP32 Enedis TIC data to JSON converter and UDP sender
+
+Stub applications are provided in the `embedded` folder for the following platforms:
+
+- Raspberry Pi Pico (basic demonstration stub): **picotic** gets TIC data on RX pin, outputs formatted JSON on UART TX
 - ARM Mbed (not functional)
 
-Only the Espressif variant is a fully fledged application, capable of logging to a remote UDP host.
-
-The others are very simple stubs that (ab)use the stdio interface provided by these platforms, as a starting point example.
+These are very simple stubs that (ab)use the stdio interface provided by these platforms, as a starting point example.
