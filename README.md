@@ -7,13 +7,11 @@ More info (in French): http://hacks.slashdirt.org/sw/tic2json/
 Example Grafana dashboard:
 ![screenshot](http://hacks.slashdirt.org/sw/tic2json/grafana-small.png)
 
-See a live snapshot [here](https://snapshot.raintank.io/dashboard/snapshot/a1IBs3c0q9mrOLpFwFnlHhgERy9ryQkM?orgId=2&from=1630921569846&to=1630943217317)
-
 ## License
 
 GPLv2-only - http://www.gnu.org/licenses/gpl-2.0.html
 
-Copyright: (C) 2021 Thibaut VARÈNE
+Copyright: (C) 2021-2022 Thibaut VARÈNE
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 2,
@@ -35,6 +33,9 @@ To build, run `cd src; make`
 
 **Note:** the build can be adjusted through the top Makefile variables.
 In particular, it is possible to build support for only specific version(s) of the TIC.
+
+For integration with embedded applications, defining `BAREBUILD` and/or `PRINT2BUF` provides
+access to an API that may be more suitable. See examples in the `embedded` folder.
 
 ## Usage
 

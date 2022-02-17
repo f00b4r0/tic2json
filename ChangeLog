@@ -1,3 +1,7 @@
+2.2
+	* Implement buffer output and callback system for embedded apps
+	* Provide a basic processing script
+
 2.1
 	* Add '-V' commandline option to print version
 	* Simplify BAREBUILD and add embedded recipes
