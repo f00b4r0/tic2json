@@ -24,6 +24,7 @@ void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char 
 {
 	// args come from the bison stack
 	int base;
+	char *rem;
 
 	field->horodate = horodate;
 	memcpy(&field->etiq, etiq, sizeof(field->etiq));
@@ -41,7 +42,24 @@ void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char 
 			base = 10;
 			break;
 	}
-	field->data.i = (int)strtol(data, NULL, base);
+	field->data.i = (int)strtol(data, &rem, base);
+
+#ifdef TICV01pme
+	if (U_SANS == etiq->unittype && *data != '\0' && *rem != '\0') {
+		// int sans unit but with a suffix: either kVA or kW - try to disambiguate
+		switch (rem[strlen(rem)-1]) {
+			case 'A':
+				field->etiq.unittype = U_KVA;
+				break;
+			case 'W':
+				field->etiq.unittype = U_KW;
+				break;
+			default:
+				break;
+		}
+	}
+#endif
+
 	free(data);
 }
 
