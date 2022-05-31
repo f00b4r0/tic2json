@@ -266,7 +266,7 @@ void print_field(const struct tic_field *field)
 	if (tp.idtag)
 		ticprintf(", \"id\": \"%s\"", tp.idtag);
 
-	ticprintf("}%c", (tp.optflags & TIC2JSON_OPT_CRFIELD) ? '\n': ' ');
+	ticprintf(" }%c", (tp.optflags & TIC2JSON_OPT_CRFIELD) ? '\n': ' ');
 
 	tp.fdelim = ',';
 }
