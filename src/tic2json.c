@@ -8,7 +8,7 @@
 
 /**
  * @file
- * Outputs as JSON a series of frames formatted as a list of fields or a dictionary.
+ * Outputs as JSON a series of frames formatted as a root list of fields or a dictionary.
  * - for list mode, fields are { "label": "xxx", "data": "xxx", horodate: "xxx", "desc": "xxx", "unit": "xxx" }
  * - for dict mode, the keys are the label, followed by { "data": "xxx", "horodate": "xxx", "desc": "xxx", "unit": "xxx" }
  * with horodate optional, unit and data optional and possibly empty and data being either quoted string or number.
@@ -81,7 +81,7 @@
  #endif	/* PRINT2BUF */
 #endif	/* BAREBUILD */
 
-#define TIC2JSON_VER	"2.2"
+#define TIC2JSON_VER	"2.3"
 
 extern bool filter_mode;
 extern bool *etiq_en;
@@ -355,12 +355,12 @@ static void usage(void)
 		" -n\t\t"	"Insère une nouvelle ligne après chaque groupe\n"
 		" -r\t\t"	"Interprète les horodates en format RFC3339\n"
 		" -s N\t\t"	"Émet une trame toutes les <N> reçues\n"
-		" -u\t\t"	"Décode le registre de statut sous forme de dictionnaire\n"
+		" -u\t\t"	"Décode le registre de statut sous forme de dictionnaire (TIC v02)\n"
 		" -V\t\t"	"Montre la version et quitte\n"
 		" -z\t\t"	"Masque les groupes numériques à zéro\n"
 		"\n"
 		"Note: le fichier de configuration du filtre d'étiquettes doit commencer par une ligne comportant\n"
-		"uniquement la séquence de caractères suivante: `#ticfilter` (sans les apostrophes), suivi à partir de\n"
+		"uniquement la séquence de caractères suivante: `#ticfilter` (sans les apostrophes), suivie à partir de\n"
 		"la ligne suivante d'un nombre quelconque d'étiquettes TIC séparées par du blanc (espace, nouvelle ligne, etc).\n"
 		"Seuls les groupes dont les étiquettes sont ainsi listées seront alors émis par le programme.\n"
 		);
@@ -452,7 +452,7 @@ int main(int argc, char **argv)
 		case 'V':
 			printf(	BINNAME " version " TIC2JSON_VER "\n"
 				"License GPLv2: GNU GPL version 2 <https://gnu.org/licenses/gpl-2.0.html>.\n"
-				"Copyright (C) 2021 Thibaut Varène.\n");
+				"Copyright (C) 2021-2022 Thibaut Varène.\n");
 			return 0;
 		case 'z':
 			tp.optflags |= TIC2JSON_OPT_MASKZEROES;

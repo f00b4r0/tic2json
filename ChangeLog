@@ -1,3 +1,6 @@
+2.3
+	* Implement partial support for PME-PMI (sponsored by Wiztivi)
+
 2.2
 	* Implement buffer output and callback system for embedded apps
 	* Provide a basic processing script

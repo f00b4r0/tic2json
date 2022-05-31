@@ -40,6 +40,10 @@ access to an API that may be more suitable. See examples in the `embedded` folde
 ## Usage
 
 The current implementation supports TIC versions **01** and **02** (a.k.a *historique* and *standard* modes).
+It also provides a near complete support for the TIC output of *PME-PMI* meters.
+
+The tool emits one root JSON object per TIC frame. Each root object is followed by a new line.
+Usage help is available by executing the software with the `-h` parameter.
 
 A tty interfaced to the meter TIC output (using e.g. [TIC2UART](http://hacks.slashdirt.org/hw/tic2uart/))
 can be set using the following `stty` settings:
@@ -53,6 +57,8 @@ Where `<serial_tty>` is the target tty (e.g. `/dev/ttyS0`) and `<speed>` is eith
 TIC output from electronic meters is either:
  - **7E1@1200bps** for "historique" mode
  - **7E1@9600bps** for "standard" mode
+ 
+ For *PME-PMI* meters, the output is **7E1** at a speed set by Enedis (1200 (default), 2400, 4800, 9600 or 19200bps).
 
 ## Notes
 
