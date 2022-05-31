@@ -24,8 +24,10 @@
 
 #ifdef BAREBUILD
  #define pr_err(format, ...)    /* nothing */
+ #define pr_warn(format, ...)	/* noting */
 #else
  #define pr_err(format, ...)    fprintf(stderr, "ERREUR: " format, ## __VA_ARGS__)
+ #define pr_warn(format, ...)    fprintf(stderr, format, ## __VA_ARGS__)
 #endif
 
 /**
