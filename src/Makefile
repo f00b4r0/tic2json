@@ -1,6 +1,6 @@
 MAIN := tic2json
 CFLAGS := -Wall -Os
-TICVERSIONS := 01 02
+TICVERSIONS := 01 02 01pme
 
 # don't touch below this line
 

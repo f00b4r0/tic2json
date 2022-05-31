@@ -2,7 +2,7 @@
 //  tic2json.c
 //  A tool to turn ENEDIS TIC data into pure JSON
 //
-//  (C) 2021 Thibaut VARENE
+//  (C) 2021-2022 Thibaut VARENE
 //  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
 //
 
@@ -39,6 +39,10 @@
 #ifdef TICV02
  #include "ticv02.tab.h"
  int ticv02yylex_destroy();
+#endif
+#ifdef TICV01pme
+ #include "ticv01pme.tab.h"
+ int ticv01pmeyylex_destroy();
 #endif
 
 #include "tic2json.h"
@@ -95,12 +99,16 @@ static struct {
 /** TIC units representation strings */
 static const char * tic_units[] = {
 	[U_SANS]	= "",
+	[U_VAH]		= "VAh",
+	[U_KWH]		= "kWh",
 	[U_WH]		= "Wh",
+	[U_KVARH]	= "kVArh",
 	[U_VARH]	= "VArh",
 	[U_A]		= "A",
 	[U_V]		= "V",
 	[U_KVA]		= "kVA",
 	[U_VA]		= "VA",
+	[U_KW]		= "kW",
 	[U_W]		= "W",
 	[U_MIN]		= "mn",
 	[U_DAL]		= "daL",
@@ -208,6 +216,7 @@ void print_field(const struct tic_field *field)
 
 	// filters
 	if (tp.framecount ||
+		(T_IGN == (field->etiq.unittype & 0xF0)) ||
 		((tp.optflags & TIC2JSON_OPT_MASKZEROES) && (T_STRING != (field->etiq.unittype & 0xF0)) && (0 == field->data.i)) ||
 		(etiq_en && !etiq_en[field->etiq.tok]))
 		return;
@@ -309,12 +318,15 @@ static inline void ticinit(void)
 #ifndef BAREBUILD
 static void usage(void)
 {
-	printf(	"usage: " BINNAME " {-1|-2} [-dhlnruVz] [-e fichier] [-i id] [-s N]\n"	// FIXME -1|-2 always shown
+	printf(	"usage: " BINNAME " {-1|-2|-P} [-dhlnruVz] [-e fichier] [-i id] [-s N]\n"	// FIXME -1|-2 always shown
 #ifdef TICV01
 	        " -1\t\t"	"Analyse les trames TIC version 01 \"historique\"\n"
 #endif
 #ifdef TICV02
 	        " -2\t\t"	"Analyse les trames TIC version 02 \"standard\"\n"
+#endif
+#ifdef TICV01pme
+		" -P\t\t"	"Analyse les trames TIC du compteur PME-PMI\n"
 #endif
 		"\n"
 		" -d\t\t"	"Émet les trames sous forme de dictionaire plutôt que de liste\n"
@@ -344,6 +356,10 @@ void parse_config_v01(const char *filename);
 void parse_config_v02(const char *filename);
 #endif
 
+#ifdef TICV01pme
+void parse_config_v01pme(const char *filename);
+#endif
+
 int main(int argc, char **argv)
 {
 	void (*parse_config)(const char *);
@@ -355,7 +371,7 @@ int main(int argc, char **argv)
 
 	ticinit();
 
-	while ((ch = getopt(argc, argv, "12de:hi:lnrs:uVz")) != -1) {
+	while ((ch = getopt(argc, argv, "12Pde:hi:lnrs:uVz")) != -1) {
 		switch (ch) {
 #ifdef TICV01
 		case '1':
@@ -373,6 +389,15 @@ int main(int argc, char **argv)
 			parse_config = parse_config_v02;
 			yyparse = ticv02yyparse;
 			yylex_destroy = ticv02yylex_destroy;
+			break;
+#endif
+#ifdef TICV01pme
+		case 'P':
+			if (yyparse)
+				errx(-1, "ERREUR: Une seule version de TIC peut être analysée à la fois");
+			parse_config = parse_config_v01pme;
+			yyparse = ticv01pmeyyparse;
+			yylex_destroy = ticv01pmeyylex_destroy;
 			break;
 #endif
 		case 'd':
@@ -477,6 +502,10 @@ void tic2json_main(FILE * yyin, int optflags)
 	ticv02yyin = yyin;
 	ticv02yyparse();
 	ticv02yylex_destroy();
+#elif defined(TICV01pme)
+	ticv01pmeyyin = yyin;
+	ticv01pmeparse();
+	ticv01pmeyylex_destroy();
 #else
 	fprintf(stderr, "NO TIC VERSION DEFINED!\n");	// avoid utf-8
 #endif
