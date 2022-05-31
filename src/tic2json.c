@@ -77,7 +77,7 @@
  #endif	/* PRINT2BUF */
 #endif	/* BAREBUILD */
 
-#define TIC2JSON_VER	"2.1"
+#define TIC2JSON_VER	"2.2"
 
 extern bool filter_mode;
 extern bool *etiq_en;
