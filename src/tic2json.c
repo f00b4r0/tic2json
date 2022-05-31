@@ -93,6 +93,7 @@ static struct {
 	char fdelim;
 	int optflags;
 	unsigned int skipframes, framecount;
+	enum { V01, V02, V01PME, } version;
 	bool ferr;
 } tp;
 
@@ -244,7 +245,7 @@ void print_field(const struct tic_field *field)
 			break;
 	}
 
-#ifdef TICV02
+#if defined(TICV02) || defined(TICV01pme)
 	if (field->horodate) {
 		if (tp.optflags & TIC2JSON_OPT_LONGDATE) {
 			const char *o, *d = field->horodate;
@@ -262,12 +263,29 @@ void print_field(const struct tic_field *field)
 					o = "+01:00";
 					break;
 			}
-			ticprintf(", \"horodate\": \"20%.2s-%.2s-%.2sT%.2s:%.2s:%.2s%s\"", d+1, d+3, d+5, d+7, d+9, d+11, o);
+			switch (tp.version) {
+				case V02:
+#ifdef TICV02
+					// ticv02 horodate: SAAMMJJhhmmss
+					ticprintf(", \"horodate\": \"20%.2s-%.2s-%.2sT%.2s:%.2s:%.2s%s\"", d+1, d+3, d+5, d+7, d+9, d+11, o);
+					break;
+#endif /* TICV02 */
+				case V01PME:
+#ifdef TICV01pme
+					// ticv01pme horodate: JJ/MM/AA HH:MM:SS
+					ticprintf(", \"horodate\": \"20%.2s-%.2s-%.2sT%.2s:%.2s:%.2s\"", d+6, d+3, d, d+9, d+12, d+15);
+					break;
+#endif /* TICV01pme */
+				case V01:
+					// no horodate in V01
+				default:
+					break;
+			}
 		}
 		else
 			ticprintf(", \"horodate\": \"%s\"", field->horodate);
 	}
-#endif /* TICV02 */
+#endif /* TICV02/TICV01pme */
 
 	if (tp.optflags & TIC2JSON_OPT_DESCFORM)
 		ticprintf(", \"desc\": \"%s\", \"unit\": \"%s\"", field->etiq.desc, tic_units[(field->etiq.unittype & 0x0F)]);
@@ -380,6 +398,7 @@ int main(int argc, char **argv)
 			parse_config = parse_config_v01;
 			yyparse = ticv01yyparse;
 			yylex_destroy = ticv01yylex_destroy;
+			tp.version = V01;
 			break;
 #endif
 #ifdef TICV02
@@ -389,6 +408,7 @@ int main(int argc, char **argv)
 			parse_config = parse_config_v02;
 			yyparse = ticv02yyparse;
 			yylex_destroy = ticv02yylex_destroy;
+			tp.version = V02;
 			break;
 #endif
 #ifdef TICV01pme
@@ -398,6 +418,7 @@ int main(int argc, char **argv)
 			parse_config = parse_config_v01pme;
 			yyparse = ticv01pmeyyparse;
 			yylex_destroy = ticv01pmeyylex_destroy;
+			tp.version = V01PME;
 			break;
 #endif
 		case 'd':
