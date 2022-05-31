@@ -2,7 +2,7 @@
 //  tic.h
 //  Interface for TIC parsers
 //
-//  (C) 2021 Thibaut VARENE
+//  (C) 2021-2022 Thibaut VARENE
 //  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
 //
 
@@ -32,16 +32,20 @@
 
 /**
  * TIC units.
- * @warning The code assumes this fits on 4 bits
+ * @warning The code assumes this fits on 4 bits (16 values)
  */
 enum tic_unit {
 	U_SANS = 0x00,
+	U_VAH,
+	U_KWH,
 	U_WH,
+	U_KVARH,
 	U_VARH,
 	U_A,
 	U_V,
 	U_KVA,
 	U_VA,
+	U_KW,
 	U_W,
 	U_MIN,
 	U_DAL,
@@ -55,6 +59,8 @@ enum tic_unit {
  enum data_type {
 	T_STRING = 0x10,
 	T_HEX = 0x20,
+	T_DATE = 0x30,
+	T_IGN = 0x40,
 };
 
 /** Internal parser representation of a TIC etiquette */

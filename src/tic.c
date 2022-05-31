@@ -2,7 +2,7 @@
 //  tic.c
 //  Common routines for TIC parsers
 //
-//  (C) 2021 Thibaut VARENE
+//  (C) 2021-2022 Thibaut VARENE
 //  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
 //
 
@@ -29,6 +29,8 @@ void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char 
 	memcpy(&field->etiq, etiq, sizeof(field->etiq));
 
 	switch ((etiq->unittype & 0xF0)) {
+		case T_IGN:
+			return;
 		case T_STRING:
 			field->data.s = data;
 			return;
