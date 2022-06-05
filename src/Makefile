@@ -14,7 +14,7 @@ all:	$(MAIN)
 
 %.lex.c: %.l %.tab.h
 # The ideal size for the flex buffer is the length of the longest token expected, in bytes, plus a little more.
-	flex -DYY_BUF_SIZE=128 -P$*yy -o$@ $<
+	flex --never-interactive -DYY_BUF_SIZE=128 -P$*yy -o$@ $<
 
 %.tab.h %.tab.c: %.y
 	bison -Wno-other -p $*yy -d $<
