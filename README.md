@@ -93,7 +93,6 @@ Alternatively, using dictionnary output and JSON_v2 parser for TIC "standard" pr
     measurement_name = "ticv2"
     timestamp_path = "DATE.horodate"
     timestamp_format = "rfc3339"
-    timestamp_timezone = "Local"
     [[inputs.socket_listener.json_v2.object]]
       path = "@this"
       included_keys = [ "PRM_data", "EAST_data", "IRMS1_data", "URMS1_data", "SINSTS_data", "SMAXSN_data", "UMOY1_data" ]
@@ -112,6 +111,22 @@ Will only log `EAST`, `IRMS1`, `URMS1`, `SINSTS`, `SMAXSN` and `UMOY1`, tagged w
 
 Note: 'socket_listener' expects _exactly_ 1 JSON object per UDP packet (decoding of data is done on a per-packet basis),
 hence the need to send each line individually with `nc`. Another alternative is to use the script provided in `tools/ticprocess.py`.
+
+#### PME-PMI specifics
+
+The PME-PMI meter uses a variant of TIC 01 that does not provide enough date/time information to infer the current DST and adjust the UTC offset in the converted (-r) date output.
+
+In that case, the converted horodate will ommit this offset in the output. The resulting string is still valid ISO 8601 but no longer valid RFC3339.
+
+The following configuration can be used with telegraf's JSON_v2 parser to correctly handle this:
+
+```toml
+    timestamp_path = "DATE.horodate"
+    timestamp_format = "2006-01-02T15:04:05"
+    timestamp_timezone = "Local"
+```
+
+The timestamps will be logged following the telegraf server timezone which is assumed to be the same as that of the meter (adjust as necessary).
 
 ## Embedded applications
 

@@ -252,7 +252,7 @@ void print_field(const struct tic_field *field)
 			switch (d[0]) {
 				default:
 				case ' ':
-					o = "";
+					o = "";	// this is not RFC3339-compliant but still valid ISO8601. Does not happen for "DATE" which is normally the timestamp.
 					break;
 				case 'E':
 				case 'e':
@@ -272,7 +272,7 @@ void print_field(const struct tic_field *field)
 #endif /* TICV02 */
 				case V01PME:
 #ifdef TICV01pme
-					// ticv01pme horodate: JJ/MM/AA HH:MM:SS
+					// ticv01pme horodate: JJ/MM/AA HH:MM:SS - output is valid ISO8601; cannot be RFC339 due to lack of DST info
 					ticprintf(", \"horodate\": \"20%.2s-%.2s-%.2sT%.2s:%.2s:%.2s\"", d+6, d+3, d, d+9, d+12, d+15);
 					break;
 #endif /* TICV01pme */
@@ -353,7 +353,7 @@ static void usage(void)
 		" -i id\t\t"	"Ajoute une balise \"id\" avec la valeur <id> à chaque groupe\n"
 		" -l\t\t"	"Ajoute les descriptions longues et les unitées de chaque groupe\n"
 		" -n\t\t"	"Insère une nouvelle ligne après chaque groupe\n"
-		" -r\t\t"	"Interprète les horodates en format RFC3339\n"
+		" -r\t\t"	"Interprète les horodates en format RFC3339 (TIC v02) ou ISO8601\n"
 		" -s N\t\t"	"Émet une trame toutes les <N> reçues\n"
 		" -u\t\t"	"Décode le registre de statut sous forme de dictionnaire (TIC v02)\n"
 		" -V\t\t"	"Montre la version et quitte\n"
