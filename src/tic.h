@@ -55,10 +55,12 @@ enum tic_unit {
  * TIC data types.
  * By default everything is an int.
  * @warning The code assumes this is packed in the upper 4 bits of a byte: must increment by 0x10.
+ * @note bit 4 (value of T_STRING) is set for string types
  */
  enum data_type {
 	T_STRING = 0x10,
 	T_HEX = 0x20,
+	T_PROFILE = 0x30,
 	T_IGN = 0x40,
 };
 

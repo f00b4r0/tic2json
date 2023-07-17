@@ -206,6 +206,35 @@ static void print_stge_data(int data)
 		pm[(d>>30) & 0x03], sep
 		);
 }
+
+static void print_pjour_data(char *data)
+{
+	const char sep = (tp.optflags & TIC2JSON_OPT_CRFIELD) ? '\n' : ' ';
+	char *d, **ap, *argv[12];
+	char ldelim = ' ';
+
+	// split the 11 blocks
+	for (ap = argv; (*ap = strsep(&data, " ")) != NULL; )
+		if (**ap != '\0')
+			if (++ap >= &argv[11])
+				break;
+	*ap = NULL;
+
+	// process and output them - blocks are in the form 'HHMMSSSS' or verbatim 'NONUTILE'
+	ticprintf("[");
+	for (ap = argv; *ap; ap++) {
+		d = *ap;
+
+		// first "NONUTILE" ends processing
+		if ('N' == *d)
+			break;
+
+		// format action as JSON (decimal) integer for easier logging/processing
+		ticprintf("%c{ \"start_time\": \"%.2s:%.2s\", \"action\": %hu }%c", ldelim, d, d+2, (uint16_t)strtol(d+4, NULL, 16), sep);
+		ldelim = ',';
+	}
+	ticprintf("]");
+}
 #endif /* TICV02 */
 
 void print_field(const struct tic_field *field)
@@ -218,7 +247,7 @@ void print_field(const struct tic_field *field)
 	// filters
 	if (tp.framecount ||
 		(T_IGN == (field->etiq.unittype & 0xF0)) ||
-		((tp.optflags & TIC2JSON_OPT_MASKZEROES) && (T_STRING != (field->etiq.unittype & 0xF0)) && (0 == field->data.i)) ||
+		((tp.optflags & TIC2JSON_OPT_MASKZEROES) && (!(field->etiq.unittype & T_STRING)) && (0 == field->data.i)) ||
 		(etiq_en && !etiq_en[field->etiq.tok]))
 		return;
 
@@ -229,10 +258,18 @@ void print_field(const struct tic_field *field)
 		case U_SANS:
 			type = field->etiq.unittype & 0xF0;
 			if (T_STRING == type) {
+string:
 				ticprintf("\"%s\"", field->data.s ? field->data.s : "");
 				break;
 			}
 #ifdef TICV02
+			else if (T_PROFILE == type) {
+				if (tp.optflags & TIC2JSON_OPT_FORMATPJ)
+					print_pjour_data(field->data.s);
+				else
+					goto string;
+				break;
+			}
 			else if ((T_HEX == type) && (tp.optflags & TIC2JSON_OPT_PARSESTGE)) {
 				// XXX abuse the fact that STGE is the only U_SANS|T_HEX field
 				print_stge_data(field->data.i);
@@ -336,7 +373,7 @@ static inline void ticinit(void)
 #ifndef BAREBUILD
 static void usage(void)
 {
-	printf(	"usage: " BINNAME " {-1|-2|-P} [-dhlnruVz] [-e fichier] [-i id] [-s N]\n"	// FIXME -1|-2 always shown
+	printf(	"usage: " BINNAME " {-1|-2|-P} [-dhlnpruVz] [-e fichier] [-i id] [-s N]\n"	// FIXME -1|-2 always shown
 #ifdef TICV01
 	        " -1\t\t"	"Analyse les trames TIC version 01 \"historique\"\n"
 #endif
@@ -353,6 +390,7 @@ static void usage(void)
 		" -i id\t\t"	"Ajoute une balise \"id\" avec la valeur <id> à chaque groupe\n"
 		" -l\t\t"	"Ajoute les descriptions longues et les unitées de chaque groupe\n"
 		" -n\t\t"	"Insère une nouvelle ligne après chaque groupe\n"
+		" -p\t\t"	"Formate les trames de profils de prochain jour (TIC v02)\n"
 		" -r\t\t"	"Interprète les horodates en format RFC3339 (TIC v02) ou ISO8601\n"
 		" -s N\t\t"	"Émet une trame toutes les <N> reçues\n"
 		" -u\t\t"	"Décode le registre de statut sous forme de dictionnaire (TIC v02)\n"
@@ -389,7 +427,7 @@ int main(int argc, char **argv)
 
 	ticinit();
 
-	while ((ch = getopt(argc, argv, "12Pde:hi:lnrs:uVz")) != -1) {
+	while ((ch = getopt(argc, argv, "12Pde:hi:lnprs:uVz")) != -1) {
 		switch (ch) {
 #ifdef TICV01
 		case '1':
@@ -439,6 +477,9 @@ int main(int argc, char **argv)
 			break;
 		case 'n':
 			tp.optflags |= TIC2JSON_OPT_CRFIELD;
+			break;
+		case 'p':
+			tp.optflags |= TIC2JSON_OPT_FORMATPJ;
 			break;
 		case 'r':
 			tp.optflags |= TIC2JSON_OPT_LONGDATE;

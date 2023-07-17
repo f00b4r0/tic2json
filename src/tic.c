@@ -33,6 +33,7 @@ void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char 
 		case T_IGN:
 			return;
 		case T_STRING:
+		case T_PROFILE:
 			field->data.s = data;
 			return;
 		case T_HEX:
@@ -68,6 +69,7 @@ void free_field(struct tic_field *field)
 	free(field->horodate);
 	switch ((field->etiq.unittype & 0xF0)) {
 		case T_STRING:
+		case T_PROFILE:
 			free(field->data.s);
 			break;
 		default:
