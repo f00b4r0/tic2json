@@ -59,7 +59,6 @@ enum tic_unit {
  enum data_type {
 	T_STRING = 0x10,
 	T_HEX = 0x20,
-	T_DATE = 0x30,
 	T_IGN = 0x40,
 };
 
