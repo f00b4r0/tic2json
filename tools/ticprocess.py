@@ -24,48 +24,59 @@ import paho.mqtt.publish as publish
 # Configuration variables
 UDP_IP = "grafana"		# adresse où envoyer le paquet UDP
 UDP_PORT = 8094			# port UDP
-MQTT_BROKER = "hap-acl"		# adresse du broker MQTT
-MQTT_TOPIC = "energy/delest"	# topic MQTT
-MQTT_SKIP = 10			# nombre de trames à ignorer entre chaque publication MQTT
+MQTT_BROKER = "hap-ac2"		# adresse du broker MQTT
+MQTT_TOPIC = "sensors/switch/delest"	# topic MQTT
+MQTT_SKIP = 8			# nombre de trames à ignorer entre chaque publication MQTT
 ETIQ_POWER = "SINSTS"		# en mono: TICv1: "PAPP", TICv2: "SINSTS"
 ETIQ_MSG = "MSG1"		# MSG1: message court (32c), MSG2: message ultra court (16c)
-VA_THRESH = 8900		# valeur limite de la puissance apparente (en VA)
+VA_THRESH = 9000		# valeur limite de la puissance apparente (en VA)
 
 
 lastmsg = ""
+filtva = 0
 
-def over_vatresh(ticjsonline):
+def print_msg(tic):
 	global lastmsg
+
+	m = tic.get(ETIQ_MSG)
+	if m:
+		m = m.get("data")
+		if m != lastmsg:
+			lastmsg = m
+			print(m)	# print new messages to stdout
+			sys.stdout.flush()
+
+def over_vatresh(tic):
+	global filtva
 	state = None
-	try:
-		tic = json.loads(ticjsonline)
-		s = tic.get(ETIQ_POWER)
-		v = tic.get("_tvalide")
 
-		m = tic.get(ETIQ_MSG)		# grab message while we're there
-		if v and m:
-			m = m.get("data")
-			if m != lastmsg:
-				lastmsg = m
-				print(m)	# print new messages to stdout
-				sys.stdout.flush()
+	s = tic.get(ETIQ_POWER)
+	if s:
+		va = s.get("data")
+		if va > max(filtva, VA_THRESH):
+			filtva = va	# overflow overrides value
+		else:
+			filtva = filtva - 1/60*(filtva - va)    # average 60 samples, ~1mn - provides hysteresis on down slope
+		state = (filtva > VA_THRESH)
 
-		if v and s:
-			if s.get("data") > VA_THRESH:
-				state = True
-			else:
-				state = False
-	except:
-		pass
 	return state
+
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 skip = 0
 
+
 for ticjsonline in sys.stdin:
 	sock.sendto(bytes(ticjsonline, "utf-8"), (UDP_IP, UDP_PORT))
-	delest = over_vatresh(ticjsonline)
-	if not skip:
-		publish.single(MQTT_TOPIC, delest, hostname=MQTT_BROKER)
-		skip = MQTT_SKIP
-	skip -= 1
+	try:
+		tic = json.loads(ticjsonline)
+		v = tic.get("_tvalide")
+		if v:
+			print_msg(tic)
+			delest = over_vatresh(tic)
+			if not skip:
+				publish.single(MQTT_TOPIC, delest, hostname=MQTT_BROKER)
+				skip = MQTT_SKIP
+			skip -= 1
+	except:
+		pass
