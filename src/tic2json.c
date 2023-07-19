@@ -2,7 +2,7 @@
 //  tic2json.c
 //  A tool to turn ENEDIS TIC data into pure JSON
 //
-//  (C) 2021-2022 Thibaut VARENE
+//  (C) 2021-2023 Thibaut VARENE
 //  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
 //
 
@@ -81,7 +81,7 @@
  #endif	/* PRINT2BUF */
 #endif	/* BAREBUILD */
 
-#define TIC2JSON_VER	"2.3"
+#define TIC2JSON_VER	"2.4"
 
 extern bool filter_mode;
 extern bool *etiq_en;

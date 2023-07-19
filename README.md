@@ -11,7 +11,7 @@ Example Grafana dashboard:
 
 GPLv2-only - http://www.gnu.org/licenses/gpl-2.0.html
 
-Copyright: (C) 2021-2022 Thibaut VARÈNE
+Copyright: (C) 2021-2023 Thibaut VARÈNE
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 2,
@@ -58,7 +58,7 @@ TIC output from electronic meters is either:
  - **7E1@1200bps** for "historique" mode
  - **7E1@9600bps** for "standard" mode
  
- For *PME-PMI* meters, the output is **7E1** at a speed set by Enedis (1200 (default), 2400, 4800, 9600 or 19200bps).
+For *PME-PMI* meters, the output is **7E1** at a speed set by Enedis (1200 (default), 2400, 4800, 9600 or 19200bps).
 
 ## Notes
 
@@ -109,6 +109,8 @@ stdbuf -oL ./tic2json -2 -dr < /dev/ttyS0 | while read line; do echo "$line" | n
 
 Will only log `EAST`, `IRMS1`, `URMS1`, `SINSTS`, `SMAXSN` and `UMOY1`, tagged with `PRM` (the meter's ID), at the timestamp provided by the meter.
 
+Note: the 'xpath_json' format parser may be an even better choice than `json_v2`. Setup is left as an exercise for the reader.
+
 Note: 'socket_listener' expects _exactly_ 1 JSON object per UDP packet (decoding of data is done on a per-packet basis),
 hence the need to send each line individually with `nc`. Another alternative is to use the script provided in `tools/ticprocess.py`.
 
@@ -127,6 +129,8 @@ The following configuration can be used with telegraf's JSON_v2 parser to correc
 ```
 
 The timestamps will be logged following the telegraf server timezone which is assumed to be the same as that of the meter (adjust as necessary).
+
+Note: if using Telegraf to ingest the data, the 'xpath_json' format parser may actually be more suitable as it makes handling underscores in labels easier.
 
 ## Embedded applications
 
