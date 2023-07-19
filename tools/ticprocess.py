@@ -25,7 +25,11 @@ import paho.mqtt.publish as publish
 UDP_IP = "grafana"		# adresse où envoyer le paquet UDP
 UDP_PORT = 8094			# port UDP
 MQTT_BROKER = "hap-ac2"		# adresse du broker MQTT
-MQTT_TOPIC = "sensors/switch/delest"	# topic MQTT
+MQTT_TOPIC_DELEST = "sensors/switch/delest"	# topic MQTT delestage, True if load > VA_THRESH or HP Rouge
+MQTT_TOPIC_ALLOWDHW = "sensors/switch/dhwt"	# topic MQTT ECS OK, 1 if "RELAIS" == 1
+MQTT_TOPIC_DAYCOLOR = "tic/color"	# -, B, W, R
+MQTT_TOPIC_NDAYCOLOR = "tic/ncolor"	# -, B, W, R
+MQTT_TOPIC_DAYHC = "tic/hc"	# 1 if HC, 0 otherwise (HP)
 MQTT_SKIP = 8			# nombre de trames à ignorer entre chaque publication MQTT
 ETIQ_POWER = "SINSTS"		# en mono: TICv1: "PAPP", TICv2: "SINSTS"
 ETIQ_MSG = "MSG1"		# MSG1: message court (32c), MSG2: message ultra court (16c)
@@ -61,6 +65,41 @@ def over_vatresh(tic):
 
 	return state
 
+# seulement pour TIC v02
+def inhibit_loads(tic):
+	t = tic.get("NTARF")
+	t = t and t.get("data")
+
+	# force delest when NTARF=6 (HP Rouge)
+	return t and (t == 6)
+
+def allow_edhw(tic):
+	r = tic.get("RELAIS")
+	r = r and r.get("data")
+
+	# allow if "real" (id 1) relay is active
+	return r and (r & 0x1)
+
+def day_hc(tic):
+	t = tic.get("NTARF")
+	t = t and t.get("data")
+
+	# HC: NTARF odd, HP: NTARF even
+	return t and (t % 2)
+
+def tempo_colors(tic):
+	s = tic.get("STGE")
+	s = s and s.get("data")
+
+	if not s:
+		return ("-","-")
+
+	d = s>>24 & 0x3
+	nd = s>>26 & 0x3
+	tempo = ("-","B","W","R")
+
+	return (tempo[d], tempo[nd])
+
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 skip = 0
@@ -73,9 +112,22 @@ for ticjsonline in sys.stdin:
 		v = tic.get("_tvalide")
 		if v:
 			print_msg(tic)
-			delest = over_vatresh(tic)
+
+			delest = inhibit_loads(tic) or over_vatresh(tic)
+			edhwok = allow_edhw(tic)
+			dayhc = day_hc(tic)
+			colors = tempo_colors(tic)
+
+			mqttmsgs = [
+				( MQTT_TOPIC_DELEST, delest, 0, False),
+				( MQTT_TOPIC_ALLOWDHW, edhwok, 0, False),
+				( MQTT_TOPIC_DAYHC, dayhc, 0, False),
+				( MQTT_TOPIC_DAYCOLOR, colors[0], 0, False),
+				( MQTT_TOPIC_NDAYCOLOR, colors[1], 0, False),
+			]
+
 			if not skip:
-				publish.single(MQTT_TOPIC, delest, hostname=MQTT_BROKER)
+				publish.multiple(mqttmsgs, hostname=MQTT_BROKER)
 				skip = MQTT_SKIP
 			skip -= 1
 	except:
