@@ -77,7 +77,7 @@ struct tic_field {
 	struct tic_etiquette etiq;	///< the field "etiquette"
 	union {
 		char *s;
-		int i;
+		long i;
 	} data;				///< the field data, if any
 	char *horodate;			///< the field horodate, if any
 };

@@ -116,7 +116,7 @@ static const char * tic_units[] = {
 };
 
 #ifdef TICV02
-static void print_stge_data(int data)
+static void print_stge_data(long data)
 {
 	const char sep = (tp.optflags & TIC2JSON_OPT_CRFIELD) ? '\n' : ' ';
 	uint32_t d = (uint32_t)data;
@@ -278,7 +278,7 @@ string:
 #endif /* TICV02 */
 			// fallthrough
 		default:
-			ticprintf("%d", field->data.i);
+			ticprintf("%ld", field->data.i);
 			break;
 	}
 
