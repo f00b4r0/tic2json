@@ -30,6 +30,7 @@ MQTT_TOPIC_ALLOWDHW = "sensors/switch/dhwt"	# topic MQTT ECS OK, 1 if "RELAIS" =
 MQTT_TOPIC_DAYCOLOR = "tic/color"	# -, B, W, R
 MQTT_TOPIC_NDAYCOLOR = "tic/ncolor"	# -, B, W, R
 MQTT_TOPIC_DAYHC = "tic/hc"	# 1 if HC, 0 otherwise (HP)
+MQTT_TOPIC_POWER = "tic/power"
 MQTT_SKIP = 8			# nombre de trames à ignorer entre chaque publication MQTT
 ETIQ_POWER = "SINSTS"		# en mono: TICv1: "PAPP", TICv2: "SINSTS"
 ETIQ_MSG = "MSG1"		# MSG1: message court (32c), MSG2: message ultra court (16c)
@@ -117,6 +118,8 @@ for ticjsonline in sys.stdin:
 			edhwok = allow_edhw(tic)
 			dayhc = day_hc(tic)
 			colors = tempo_colors(tic)
+			p = tic.get(ETIQ_POWER)
+			p = p and p.get("data")
 
 			mqttmsgs = [
 				( MQTT_TOPIC_DELEST, delest, 0, False),
@@ -124,6 +127,7 @@ for ticjsonline in sys.stdin:
 				( MQTT_TOPIC_DAYHC, dayhc, 0, False),
 				( MQTT_TOPIC_DAYCOLOR, colors[0], 0, False),
 				( MQTT_TOPIC_NDAYCOLOR, colors[1], 0, False),
+				( MQTT_TOPIC_POWER, p, 0, False),
 			]
 
 			if not skip:
