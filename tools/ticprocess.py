@@ -20,6 +20,11 @@ import socket
 import json
 import paho.mqtt.publish as publish
 
+from oauthlib.oauth2 import BackendApplicationClient
+from requests_oauthlib import OAuth2Session
+from requests.auth import HTTPBasicAuth
+from datetime import datetime
+
 
 # Configuration variables
 UDP_IP = "grafana"		# adresse où envoyer le paquet UDP
@@ -35,6 +40,44 @@ MQTT_SKIP = 8			# nombre de trames à ignorer entre chaque publication MQTT
 ETIQ_POWER = "SINSTS"		# en mono: TICv1: "PAPP", TICv2: "SINSTS"
 ETIQ_MSG = "MSG1"		# MSG1: message court (32c), MSG2: message ultra court (16c)
 VA_THRESH = 9000		# valeur limite de la puissance apparente (en VA)
+RTE_CLIENT_ID=''        # RTE API client_id (optionnel)
+RTE_CLIENT_SECRET=''    # RTE API client_secret (optionnel)
+
+def fetch_rte_ncolor():
+	if not RTE_CLIENT_ID or not RTE_CLIENT_SECRET:
+		return None
+
+	token_url = 'https://digital.iservices.rte-france.com/token/oauth/'
+	data_url = 'https://digital.iservices.rte-france.com/open_api/tempo_like_supply_contract/v1/tempo_like_calendars'
+
+	auth = HTTPBasicAuth(RTE_CLIENT_ID, RTE_CLIENT_SECRET)
+	client = BackendApplicationClient(client_id=RTE_CLIENT_ID)
+	oauth = OAuth2Session(client=client)
+	token = oauth.fetch_token(token_url=token_url, auth=auth)
+
+	headers = { "Accept": "application/json", }
+
+	data = oauth.get(data_url, headers=headers)
+	data = data.json()
+	values = data['tempo_like_calendars']['values'][0]
+	sdate = datetime.fromisoformat(values['start_date'])
+	color = values['value']
+	udate = datetime.fromisoformat(values['updated_date'])
+
+	now = datetime.now(udate.tzinfo)
+
+	if (now.day != udate.day):
+		return None
+	else:
+		match color:
+			case "BLUE":
+				return 'B'
+			case "WHITE":
+				return 'W'
+			case "RED":
+				return 'R'
+			case _:
+				return None
 
 
 lastmsg = ""
@@ -104,7 +147,8 @@ def tempo_colors(tic):
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 skip = 0
-
+dupdate = 0
+rtencolor = None
 
 for ticjsonline in sys.stdin:
 	sock.sendto(bytes(ticjsonline, "utf-8"), (UDP_IP, UDP_PORT))
@@ -114,19 +158,38 @@ for ticjsonline in sys.stdin:
 		if v:
 			print_msg(tic)
 			if not skip:
+				# update RTE API result when needed
+				now = datetime.now()
+				if (now.day != dupdate):
+					rtencolor = None	# reset on day change
+					# try to update from 10:40 about every minute until success
+					if ((now.hour >= 10) or ((now.hour == 10) and (now.minute >= 40))) and (now.second <= MQTT_SKIP+1):
+						try:
+							rtencolor = fetch_rte_ncolor()
+						except:
+							rtencolor = None
+						if rtencolor:
+							dupdate = now.day
+
 				delest = inhibit_loads(tic) or over_vatresh(tic)
 				edhwok = allow_edhw(tic)
 				dayhc = day_hc(tic)
 				colors = tempo_colors(tic)
+				dc = colors[0]
+				ndc = colors[1]
 				p = tic.get(ETIQ_POWER)
 				p = p and p.get("data")
+
+				# if next day is not provided, try RTE as fallback
+				if '-' == ndc and rtencolor:
+					ndc = rtencolor
 
 				mqttmsgs = [
 					( MQTT_TOPIC_DELEST, delest, 0, False),
 					( MQTT_TOPIC_ALLOWDHW, edhwok, 0, False),
 					( MQTT_TOPIC_DAYHC, dayhc, 0, False),
-					( MQTT_TOPIC_DAYCOLOR, colors[0], 0, False),
-					( MQTT_TOPIC_NDAYCOLOR, colors[1], 0, False),
+					( MQTT_TOPIC_DAYCOLOR, dc, 0, False),
+					( MQTT_TOPIC_NDAYCOLOR, ndc, 0, False),
 					( MQTT_TOPIC_POWER, p, 0, False),
 				]
 
