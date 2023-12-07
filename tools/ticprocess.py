@@ -113,24 +113,23 @@ for ticjsonline in sys.stdin:
 		v = tic.get("_tvalide")
 		if v:
 			print_msg(tic)
-
-			delest = inhibit_loads(tic) or over_vatresh(tic)
-			edhwok = allow_edhw(tic)
-			dayhc = day_hc(tic)
-			colors = tempo_colors(tic)
-			p = tic.get(ETIQ_POWER)
-			p = p and p.get("data")
-
-			mqttmsgs = [
-				( MQTT_TOPIC_DELEST, delest, 0, False),
-				( MQTT_TOPIC_ALLOWDHW, edhwok, 0, False),
-				( MQTT_TOPIC_DAYHC, dayhc, 0, False),
-				( MQTT_TOPIC_DAYCOLOR, colors[0], 0, False),
-				( MQTT_TOPIC_NDAYCOLOR, colors[1], 0, False),
-				( MQTT_TOPIC_POWER, p, 0, False),
-			]
-
 			if not skip:
+				delest = inhibit_loads(tic) or over_vatresh(tic)
+				edhwok = allow_edhw(tic)
+				dayhc = day_hc(tic)
+				colors = tempo_colors(tic)
+				p = tic.get(ETIQ_POWER)
+				p = p and p.get("data")
+
+				mqttmsgs = [
+					( MQTT_TOPIC_DELEST, delest, 0, False),
+					( MQTT_TOPIC_ALLOWDHW, edhwok, 0, False),
+					( MQTT_TOPIC_DAYHC, dayhc, 0, False),
+					( MQTT_TOPIC_DAYCOLOR, colors[0], 0, False),
+					( MQTT_TOPIC_NDAYCOLOR, colors[1], 0, False),
+					( MQTT_TOPIC_POWER, p, 0, False),
+				]
+
 				publish.multiple(mqttmsgs, hostname=MQTT_BROKER)
 				skip = MQTT_SKIP
 			skip -= 1
