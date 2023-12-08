@@ -4,7 +4,7 @@
 ##  ticprocess.py
 ##  Basic processing of tic2json dictionary output
 ##
-##  (C) 2022 Thibaut VARENE
+##  (C) 2022-2023 Thibaut VARENE
 ##  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
 ##
 
@@ -66,7 +66,9 @@ def fetch_rte_ncolor():
 
 	now = datetime.now(udate.tzinfo)
 
-	if (now.day != udate.day):
+	if (now.day != udate.day):	# skip if update day isn't today
+		return None
+	elif (sdate < now):			# skip if start date is past
 		return None
 	else:
 		match color:
@@ -174,9 +176,7 @@ for ticjsonline in sys.stdin:
 				delest = inhibit_loads(tic) or over_vatresh(tic)
 				edhwok = allow_edhw(tic)
 				dayhc = day_hc(tic)
-				colors = tempo_colors(tic)
-				dc = colors[0]
-				ndc = colors[1]
+				(dc, ndc) = tempo_colors(tic)
 				p = tic.get(ETIQ_POWER)
 				p = p and p.get("data")
 
