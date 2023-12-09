@@ -10,8 +10,11 @@
 
 # Lit la sortie dictionnaire de tic2json, et:
 # - envoie la trame JSON brute via UDP,
-# - vérifie la puissance apparente soutirée actuelle et publie via MQTT un statut de délestage suivant que la valeur VA_THRESH est dépassée ou non
+# - vérifie la puissance apparente soutirée actuellet la publie via MQTT ainsi que:
+#   - un statut de délestage suivant que la valeur VA_THRESH est dépassée ou  (ou qu'on est en jour Rouge en abo Tempo)
+#   - le statut du relais du compteur (pour le pilotage d'un ballon par ex)
 # - émets les messages courants sur la sortie standard
+# - pour l'abonnement Tempo, publie la couleur du jour et du lendemain (possibilité d'utiliser l'API RTE)
 # Permet par exemple de piloter une demande de délestage via MQTT tout en enregistrant les données avec telegraf
 # Exemple d'utilisation: stdbuf -oL tic2json -d | ticprocess.py
 
@@ -165,7 +168,7 @@ for ticjsonline in sys.stdin:
 				if (now.day != dupdate):
 					rtencolor = None	# reset on day change
 					# try to update from 10:40 about every minute until success
-					if ((now.hour >= 10) or ((now.hour == 10) and (now.minute >= 40))) and (now.second <= MQTT_SKIP+1):
+					if ((now.hour > 10) or ((now.hour == 10) and (now.minute >= 40))) and (now.second <= MQTT_SKIP+1):
 						try:
 							rtencolor = fetch_rte_ncolor()
 						except:
