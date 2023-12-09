@@ -493,7 +493,7 @@ int main(int argc, char **argv)
 		case 'V':
 			printf(	BINNAME " version " TIC2JSON_VER "\n"
 				"License GPLv2: GNU GPL version 2 <https://gnu.org/licenses/gpl-2.0.html>.\n"
-				"Copyright (C) 2021-2022 Thibaut Varène.\n");
+				"Copyright (C) 2021-2023 Thibaut Varène.\n");
 			return 0;
 		case 'z':
 			tp.optflags |= TIC2JSON_OPT_MASKZEROES;
