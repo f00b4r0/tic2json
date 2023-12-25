@@ -1,3 +1,10 @@
+2.5
+	* Fix TICv02 STGE decoding (overflow on large values)
+
+2.4
+	* Implement decoder for TIC v02 "PJOURF+1"/"PPOINTE" (-p)
+	* Improve processing script to parse TEMPO data
+
 2.3
 	* Implement partial support for PME-PMI (sponsored by Wiztivi)
 

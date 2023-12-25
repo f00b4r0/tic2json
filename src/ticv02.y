@@ -191,8 +191,8 @@ etiquette_nodate:
 	| ET_NTARF	{ $$.tok=yytranslate[ET_NTARF]; $$.unittype=U_SANS; $$.label=$1; $$.desc="Numéro de l'index tarifaire en cours"; }
 	| ET_NJOURF	{ $$.tok=yytranslate[ET_NJOURF]; $$.unittype=U_SANS; $$.label=$1; $$.desc="Numéro du jour en cours calendrier fournisseur"; }
 	| ET_NJOURFP1	{ $$.tok=yytranslate[ET_NJOURFP1]; $$.unittype=U_SANS; $$.label=$1; $$.desc="Numéro du prochain jour calendrier fournisseur"; }
-	| ET_PJOURFP1	{ $$.tok=yytranslate[ET_PJOURFP1]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Profil du prochain jour calendrier fournisseur"; }
-	| ET_PPOINTE	{ $$.tok=yytranslate[ET_PPOINTE]; $$.unittype=U_SANS|T_STRING; $$.label=$1; $$.desc="Profil du prochain jour de pointe"; }
+	| ET_PJOURFP1	{ $$.tok=yytranslate[ET_PJOURFP1]; $$.unittype=U_SANS|T_PROFILE; $$.label=$1; $$.desc="Profil du prochain jour calendrier fournisseur"; }
+	| ET_PPOINTE	{ $$.tok=yytranslate[ET_PPOINTE]; $$.unittype=U_SANS|T_PROFILE; $$.label=$1; $$.desc="Profil du prochain jour de pointe"; }
 ;
 
 

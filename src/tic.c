@@ -23,7 +23,6 @@ bool *etiq_en;		///< when non-NULL, a token-indexed array, where the related tok
 void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char *horodate, char *data)
 {
 	// args come from the bison stack
-	int base;
 	char *rem;
 
 	field->horodate = horodate;
@@ -33,16 +32,16 @@ void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char 
 		case T_IGN:
 			return;
 		case T_STRING:
+		case T_PROFILE:
 			field->data.s = data;
 			return;
 		case T_HEX:
-			base = 16;
+			field->data.i = strtoul(data, &rem, 16);
 			break;
 		default:
-			base = 10;
+			field->data.i = strtol(data, &rem, 10);
 			break;
 	}
-	field->data.i = (int)strtol(data, &rem, base);
 
 #ifdef TICV01pme
 	if (U_SANS == etiq->unittype && *data != '\0' && *rem != '\0') {
@@ -68,6 +67,7 @@ void free_field(struct tic_field *field)
 	free(field->horodate);
 	switch ((field->etiq.unittype & 0xF0)) {
 		case T_STRING:
+		case T_PROFILE:
 			free(field->data.s);
 			break;
 		default:
