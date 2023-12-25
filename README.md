@@ -22,14 +22,39 @@ without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 
 See LICENSE.md for details
 
-## Dependencies
+## Dependencies & Install
 
  - A **C compiler** supporting the C standard library for the target system (e.g. **gcc**)
  - **make**, **flex** and **bison** on the build host
- 
+
+### Debian/Ubuntu
+
+1. Package Manager Update
+```
+sudo apt update
+```
+2. Install Build tools
+```
+sudo apt install -y build-essential flex bison
+```
+3. Clone repository
+```
+git clone git@github.com:f00b4r0/tic2json.git
+```
+
 ## Building
 
-To build, run `cd src; make`
+To build :
+
+1. Go to `src` folder
+```
+cd tic2json/src
+```
+
+2. Run `make`
+```
+make
+```
 
 **Note:** the build can be adjusted through the top Makefile variables.
 In particular, it is possible to build support for only specific version(s) of the TIC.
