@@ -60,7 +60,7 @@ extern bool *etiq_en;
 
 %token <label> ET_TRAME ET_ADS ET_MESURES ET_DATE ET_MODE ET_CONFIG ET_PTCOUR ET_TARIFDYN
 %token <label> ET_EA_s ET_ERP_s ET_ERM_s ET_EAPP_s ET_EA_i ET_ERP_i ET_ERM_i ET_EAPP_i
-%token <label> ET_DATEPAX ET_PAX_i ET_PAX_s ET_DEBP ET_EAP_s ET_EAP_i
+%token <label> ET_DATEPAX ET_PAX_i ET_PAX_s ET_DEBP ET_EAP_s ET_EAP_i ET_TGPHI_s ET_TGPHI_i
 %token <label> ET_ERPP_s ET_ERMP_s ET_ERPP_i ET_ERMP_i ET_DEBPM1 ET_FINPM1 ET_EAPM1_s ET_EAPM1_i
 %token <label> ET_ERPPM1_s ET_ERMPM1_s ET_ERPPM1_i ET_ERMPM1_i ET_PS ET_PREAVIS ET_PA1MN ET_PMAX_s ET_PMAX_i
 
@@ -183,6 +183,9 @@ etiquette_nodate:
 
 	| ET_PMAX_s	{ $$.tok=yytranslate[ET_PMAX_s]; $$.unittype=U_SANS; $$.label=$1; $$.desc="Puissance maximale atteinte en période de soutirage d’énergie active pour la période tarifaire en cours"; }
 	| ET_PMAX_i	{ $$.tok=yytranslate[ET_PMAX_i]; $$.unittype=U_SANS; $$.label=$1; $$.desc="Puissance maximale atteinte en période d’injection d’énergie active pour la période tarifaire en cours"; }
+
+	| ET_TGPHI_s	{ $$.tok=yytranslate[ET_TGPHI_s]; $$.unittype=U_SANS|T_DEC2; $$.label=$1; $$.desc="Tangente phi moyenne 10 minutes en période de soutirage d'énergie active"; }
+	| ET_TGPHI_i	{ $$.tok=yytranslate[ET_TGPHI_i]; $$.unittype=U_SANS|T_DEC2; $$.label=$1; $$.desc="Tangente phi moyenne 10 minutes en période d’injection d'énergie active"; }
 ;
 
 etiquette_ignored:

@@ -62,6 +62,7 @@ enum tic_unit {
 	T_HEX = 0x20,
 	T_PROFILE = 0x30,
 	T_IGN = 0x40,
+	T_DEC2 = 0x50,	///< fixed-point 2 digits precision
 };
 
 /** Internal parser representation of a TIC etiquette */

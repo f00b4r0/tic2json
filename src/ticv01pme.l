@@ -179,8 +179,8 @@ PA1MN		{ crc_calc(); ticv01pmeyylval.label = "PA1MN"; return ET_PA1MN; }
 PMAX_s		{ crc_calc(); ticv01pmeyylval.label = "PMAX_s"; return ET_PMAX_s; }
 PMAX_i		{ crc_calc(); ticv01pmeyylval.label = "PMAX_i"; return ET_PMAX_i; }
 
-TGPHI_s		|
-TGPHI_i		{ crc_calc(); return ET_IGNORED; }
+TGPHI_s		{ crc_calc(); ticv01pmeyylval.label = "TGPHI_s"; return ET_TGPHI_s; }
+TGPHI_i		{ crc_calc(); ticv01pmeyylval.label = "TGPHI_i"; return ET_TGPHI_i; }
 
 MESURES2	{ crc_calc(); ticv01pmeyylval.label = "MESURES2"; return ET_MESURES; }
 PTCOUR2		{ crc_calc(); ticv01pmeyylval.label = "PTCOUR2"; return ET_PTCOUR; }

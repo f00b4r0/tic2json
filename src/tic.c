@@ -24,6 +24,7 @@ void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char 
 {
 	// args come from the bison stack
 	char *rem;
+	long l;
 
 	field->horodate = horodate;
 	memcpy(&field->etiq, etiq, sizeof(field->etiq));
@@ -37,6 +38,12 @@ void make_field(struct tic_field *field, const struct tic_etiquette *etiq, char 
 			return;
 		case T_HEX:
 			field->data.i = strtoul(data, &rem, 16);
+			break;
+		case T_DEC2:	// x,xx or x.xx - always 2 digits after sep
+			l = labs(strtol(data, &rem, 10));
+			l *= 100;
+			l += strtol(rem+1, NULL, 10);
+			field->data.i = ('-' == data[0]) ? -l : l;
 			break;
 		default:
 			field->data.i = strtol(data, &rem, 10);

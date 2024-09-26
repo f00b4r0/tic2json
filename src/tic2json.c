@@ -276,6 +276,12 @@ string:
 				break;
 			}
 #endif /* TICV02 */
+#ifdef TICV01pme
+			else if (T_DEC2 == type) {
+				ticprintf("%.2f", (float)field->data.i/100);
+				break;
+			}
+#endif /* TICV01pme */
 			// fallthrough
 		default:
 			ticprintf("%ld", field->data.i);
