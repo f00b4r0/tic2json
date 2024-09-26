@@ -2,7 +2,7 @@
 //  tic.c
 //  Common routines for TIC parsers
 //
-//  (C) 2021-2022 Thibaut VARENE
+//  (C) 2021-2022,2024 Thibaut VARENE
 //  License: GPLv2 - http://www.gnu.org/licenses/gpl-2.0.html
 //
 

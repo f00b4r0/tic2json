@@ -1,3 +1,6 @@
+2.6
+	* Add support for TGPHI_s/TGPHI_i in PME-PMI
+
 2.5
 	* Fix TICv02 STGE decoding (overflow on large values)
 
