@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <locale.h>
 #ifndef BAREBUILD
  #include <unistd.h>	// getopt
  #include <err.h>
@@ -430,6 +431,8 @@ int main(int argc, char **argv)
 
 	const char *fconfig = NULL;
 	int ch;
+
+	setlocale(LC_NUMERIC, "C");     // ensure floats have decimal dot.
 
 	ticinit();
 
