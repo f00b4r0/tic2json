@@ -259,7 +259,9 @@ void print_field(const struct tic_field *field)
 		case U_SANS:
 			type = field->etiq.unittype & 0xF0;
 			if (T_STRING == type) {
+#ifdef TICV02
 string:
+#endif
 				ticprintf("\"%s\"", field->data.s ? field->data.s : "");
 				break;
 			}
