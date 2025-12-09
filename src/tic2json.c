@@ -536,6 +536,7 @@ int main(int argc, char **argv)
 
 extern FILE *ticv01yyin;
 extern FILE *ticv02yyin;
+extern FILE *ticv01pmeyyin;
 
 #ifdef PRINT2BUF
 /**
@@ -568,14 +569,17 @@ void tic2json_main(FILE * yyin, int optflags)
 	ticprintf("%c", tp.framedelims[0]);
 
 #if defined(TICV01)
+	tp.version = V01;
 	ticv01yyin = yyin;
 	ticv01yyparse();
 	ticv01yylex_destroy();
 #elif defined(TICV02)
+	tp.version = V02;
 	ticv02yyin = yyin;
 	ticv02yyparse();
 	ticv02yylex_destroy();
 #elif defined(TICV01pme)
+	tp.version = V01PME;
 	ticv01pmeyyin = yyin;
 	ticv01pmeparse();
 	ticv01pmeyylex_destroy();
